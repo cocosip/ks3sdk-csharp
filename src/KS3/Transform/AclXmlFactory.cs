@@ -13,7 +13,7 @@ namespace KS3.Transform
             StringBuilder builder = new StringBuilder();
             builder.Append("<AccessControlPolicy>");
             builder.Append(ConvertOwner(acl.Owner));
-            builder.Append(ConvertGrants(acl.getGrants()));
+            builder.Append(ConvertGrants(acl.GetGrants()));
             builder.Append("</AccessControlPolicy>");
 
             return builder.ToString();
@@ -24,7 +24,7 @@ namespace KS3.Transform
             if (owner == null)
                 return null;
 
-            return "<Owner><DisplayName>" + owner.getDisplayName() + "</DisplayName><ID>" + owner.getId() + "</ID></Owner>";
+            return "<Owner><DisplayName>" + owner.DisplayName + "</DisplayName><ID>" + owner.Id + "</ID></Owner>";
         }
 
         private static string ConvertGrants(ISet<Grant> grants)

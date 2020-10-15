@@ -32,7 +32,7 @@ namespace KS3.Model
         /// <summary>
         /// Return the object only if it has been modified since the specified time, otherwise return a 304 (not modified).
         /// </summary>
-        public DateTime ModifiedSinceConstraint { get; set; }
+        public DateTime? ModifiedSinceConstraint { get; set; }
 
         /// <summary>
         /// modify the return response's headers

@@ -6,6 +6,11 @@ namespace KS3.Model
     {
         public List<CorsRule> Rules { get; set; }
 
+        public BucketCorsConfigurationResult()
+        {
+            Rules = new List<CorsRule>();
+        }
+
         public BucketCorsConfigurationResult AddCorsRule(CorsRule corsRule)
         {
             Rules.Add(corsRule);

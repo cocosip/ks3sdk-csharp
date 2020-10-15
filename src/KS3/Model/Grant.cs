@@ -26,17 +26,15 @@
             Permission = permission;
         }
 
-
-
-
         public override bool Equals(object obj)
         {
             if (obj == null)
-                return false;
-
-            if (GetType() == obj.GetType())
             {
-                Grant other = (Grant)obj;
+                return false;
+            }
+
+            if (obj is Grant other)
+            {
                 if (Permission.Equals(other.Permission) && Grantee.Equals(other.Grantee))
                 {
                     return true;

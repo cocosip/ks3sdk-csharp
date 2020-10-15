@@ -52,7 +52,7 @@ namespace KS3.Model
 
         private void Validate()
         {
-            if (string.IsNullOrEmpty(BucketName))
+            if (string.IsNullOrWhiteSpace(BucketName))
             {
                 throw new Exception("bucketname is not null");
             }

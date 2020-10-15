@@ -2,7 +2,6 @@
 {
     public class CopyObjectRequest : KS3Request
     {
-
         public string SourceBucket { get; set; }
 
         public string SourceObject { get; set; }

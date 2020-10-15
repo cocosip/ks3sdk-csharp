@@ -28,11 +28,11 @@ namespace KS3.Transform
                 {
                     if (xr.Name.Equals("DisplayName"))
                     {
-                        bucketsOwner.setDisplayName(currText.ToString());
+                        bucketsOwner.DisplayName = currText.ToString();
                     }
                     else if (xr.Name.Equals("ID"))
                     {
-                        bucketsOwner.setId(currText.ToString());
+                        bucketsOwner.Id = currText.ToString();
                     }
                     else if (xr.Name.Equals("CreationDate"))
                     {

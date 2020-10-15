@@ -37,7 +37,7 @@ namespace KS3.Internal
                     String value = headers[name];
 
                     String lname = name.ToLower();
-                    
+
                     // Ignore any headers that are not particularly interesting.
                     if (lname.Equals(Headers.CONTENT_TYPE.ToLower()) || lname.Equals(Headers.CONTENT_MD5.ToLower()) || lname.Equals(Headers.DATE.ToLower()) ||
                         lname.StartsWith(Headers.KS3_PREFIX))
@@ -86,7 +86,7 @@ namespace KS3.Internal
             String[] parameterNames = request.GetParameters().Keys.ToArray();
             Array.Sort(parameterNames);
             char separator = '?';
-            foreach(String parameterName in parameterNames)
+            foreach (String parameterName in parameterNames)
             {
                 // Skip any parameters that aren't part of the canonical signed string
                 if (!SIGNED_PARAMETERS.Contains(parameterName)) continue;
@@ -102,28 +102,42 @@ namespace KS3.Internal
             return buf.ToString();
         }
 
-        public static void populateObjectMetadata(HttpWebResponse response, ObjectMetadata metadata)
+        public static void PopulateObjectMetadata(HttpWebResponse response, ObjectMetadata metadata)
         {
-            ISet<String> ignoredHeaders = new HashSet<String>{ Headers.DATE, Headers.SERVER, Headers.REQUEST_ID, Headers.CONNECTION };
-            foreach (String name in response.Headers.AllKeys)
+            ISet<string> ignoredHeaders = new HashSet<string> {
+                Headers.DATE,
+                Headers.SERVER,
+                Headers.REQUEST_ID,
+                Headers.CONNECTION };
+            foreach (string name in response.Headers.AllKeys)
             {
                 if (name.StartsWith(Headers.KS3_USER_METADATA_PREFIX))
                 {
-                    String value = response.Headers[name];
-                    String key = name.Substring(Headers.KS3_USER_METADATA_PREFIX.Length);
-                    metadata.setUserMetaData(key, value);
+                    string value = response.Headers[name];
+                    string key = name.Substring(Headers.KS3_USER_METADATA_PREFIX.Length);
+
+                    metadata.SetUserMetaData(key, value);
                 }
                 else if (ignoredHeaders.Contains(name))
                 {
                     // ignore...
                 }
-                else if (name.Equals(Headers.LAST_MODIFIED))
-                    metadata.setHeader(name, DateTime.Parse(response.Headers[name]));
-                else if (name.Equals(Headers.CONTENT_LENGTH))
-                    metadata.setHeader(name, long.Parse(response.Headers[name]));
+                else if (name.Equals(Headers.LAST_MODIFIED, StringComparison.OrdinalIgnoreCase))
+                {
+                    metadata.SetHeader(name, DateTime.Parse(response.Headers[name]));
+                }
+                else if (name.Equals(Headers.CONTENT_LENGTH, StringComparison.OrdinalIgnoreCase))
+                {
+                    metadata.SetHeader(name, long.Parse(response.Headers[name]));
+                }
                 else if (name.Equals(Headers.ETAG))
-                    metadata.setHeader(name, removeQuotes(response.Headers[name]));
-                else metadata.setHeader(name, response.Headers[name]);
+                {
+                    metadata.SetHeader(name, removeQuotes(response.Headers[name]));
+                }
+                else
+                {
+                    metadata.SetHeader(name, response.Headers[name]);
+                }
             }
         }
 

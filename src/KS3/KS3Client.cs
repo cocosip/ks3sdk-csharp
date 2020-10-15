@@ -180,7 +180,7 @@ namespace KS3
 
             if (createBucketRequest.Acl != null)
             {
-                addAclHeaders(request, createBucketRequest.Acl);
+                AddAclHeaders(request, createBucketRequest.Acl);
             }
             else if (createBucketRequest.CannedAcl != null)
             {
@@ -276,14 +276,15 @@ namespace KS3
             this.SetBucketAcl(new SetBucketAclRequest(bucketName, cannedAcl));
         }
 
-        /**
-         * Sets the AccessControlList for the specified KS3 bucket.
-         */
+        /// <summary>
+        /// Sets the AccessControlList for the specified KS3 bucket.
+        /// </summary>
+        /// <param name="setBucketAclRequest"></param>
         public void SetBucketAcl(SetBucketAclRequest setBucketAclRequest)
         {
-            string bucketName = setBucketAclRequest.getBucketName();
-            AccessControlList acl = setBucketAclRequest.getAcl();
-            CannedAccessControlList cannedAcl = setBucketAclRequest.getCannedAcl();
+            var bucketName = setBucketAclRequest.BucketName;
+            AccessControlList acl = setBucketAclRequest.Acl;
+            CannedAccessControlList cannedAcl = setBucketAclRequest.CannedAcl;
 
             IRequest<SetBucketAclRequest> request = this.CreateRequest(bucketName, null, setBucketAclRequest, HttpMethod.PUT);
 
@@ -327,9 +328,9 @@ namespace KS3
         {
             IRequest<PutBucketLoggingRequest> request = this.CreateRequest(putBucketLoggingRequest.BucketName, null, putBucketLoggingRequest, HttpMethod.PUT);
             request.GetParameters().Add("logging", null);
-            request.SetHeader(Headers.CONTENT_LENGTH, putBucketLoggingRequest.toXmlAdapter().Length.ToString());
+            request.SetHeader(Headers.CONTENT_LENGTH, putBucketLoggingRequest.ToXmlAdapter().Length.ToString());
             request.SetHeader(Headers.CONTENT_TYPE, "application/xml");
-            request.SetContent(putBucketLoggingRequest.toXmlAdapter());
+            request.SetContent(putBucketLoggingRequest.ToXmlAdapter());
             this.Invoke(request, this.voidResponseHandler, putBucketLoggingRequest.BucketName, null);
         }
         /// <summary>
@@ -369,45 +370,62 @@ namespace KS3
             return this.ListObjects(new ListObjectsRequest(bucketName, null, null, null, null));
         }
 
-        /**
-         * Returns a list of summary information about the objects in the specified bucket.
-         */
+        /// <summary>
+        /// Returns a list of summary information about the objects in the specified bucket.
+        /// </summary>
+        /// <param name="bucketName"></param>
+        /// <param name="prefix"></param>
+        /// <returns></returns>
         public ObjectListing ListObjects(string bucketName, string prefix)
         {
-            return this.ListObjects(new ListObjectsRequest(bucketName, prefix, null, null, null));
+            return ListObjects(new ListObjectsRequest(bucketName, prefix, null, null, null));
         }
 
-        /**
-         * Returns a list of summary information about the objects in the specified bucket.
-         */
+        /// <summary>
+        /// Returns a list of summary information about the objects in the specified bucket.
+        /// </summary>
+        /// <param name="listObjectRequest"></param>
+        /// <returns></returns>
         public ObjectListing ListObjects(ListObjectsRequest listObjectRequest)
         {
-            string bucketName = listObjectRequest.getBucketName();
-            IRequest<ListObjectsRequest> request = this.CreateRequest(bucketName, null, listObjectRequest, HttpMethod.GET);
+            var bucketName = listObjectRequest.BucketName;
+            IRequest<ListObjectsRequest> request = CreateRequest(bucketName, null, listObjectRequest, HttpMethod.GET);
 
-            if (listObjectRequest.getPrefix() != null)
-                request.SetParameter("prefix", listObjectRequest.getPrefix());
-            if (listObjectRequest.getMarker() != null)
-                request.SetParameter("marker", listObjectRequest.getMarker());
-            if (listObjectRequest.getDelimiter() != null)
-                request.SetParameter("delimiter", listObjectRequest.getDelimiter());
-            if (listObjectRequest.getMaxKeys() != null && listObjectRequest.getMaxKeys() >= 0)
-                request.SetParameter("max-keys", listObjectRequest.getMaxKeys().ToString());
+            if (!string.IsNullOrWhiteSpace(listObjectRequest.Prefix))
+            {
+                request.SetParameter("prefix", listObjectRequest.Prefix);
+            }
+            if (!string.IsNullOrWhiteSpace(listObjectRequest.Marker))
+            {
+                request.SetParameter("marker", listObjectRequest.Marker);
+            }
+            if (!string.IsNullOrWhiteSpace(listObjectRequest.Delimiter))
+            {
+                request.SetParameter("delimiter", listObjectRequest.Delimiter);
+            }
 
-            return this.Invoke(request, new ListObjectsUnmarshallers(), bucketName, null);
+            if (listObjectRequest.MaxKeys.HasValue)
+            {
+                request.SetParameter("max-keys", listObjectRequest.MaxKeys.ToString());
+            }
+
+            return Invoke(request, new ListObjectsUnmarshallers(), bucketName, null);
         }
 
-        /**
-         * Deletes the specified object in the specified bucket.
-         */
+        /// <summary>
+        /// Deletes the specified object in the specified bucket.
+        /// </summary>
+        /// <param name="bucketName"></param>
+        /// <param name="key"></param>
         public void DeleteObject(string bucketName, string key)
         {
-            this.DeleteObject(new DeleteObjectRequest(bucketName, key));
+            DeleteObject(new DeleteObjectRequest(bucketName, key));
         }
 
-        /**
-         * Deletes the specified object in the specified bucket.
-         */
+        /// <summary>
+        /// Deletes the specified object in the specified bucket.
+        /// </summary>
+        /// <param name="deleteObjectRequest"></param>
         public void DeleteObject(DeleteObjectRequest deleteObjectRequest)
         {
             var bucketName = deleteObjectRequest.BucketName;
@@ -448,10 +466,10 @@ namespace KS3
                 request.SetHeader(Headers.RANGE, range[0].ToString() + "-" + range[1].ToString());
             }
 
-            addDateHeader(request, Headers.GET_OBJECT_IF_MODIFIED_SINCE, getObjectRequest.ModifiedSinceConstraint);
-            addDateHeader(request, Headers.GET_OBJECT_IF_UNMODIFIED_SINCE, getObjectRequest.UnmodifiedSinceConstraint);
-            addstringListHeader(request, Headers.GET_OBJECT_IF_MATCH, getObjectRequest.MatchingETagConstraints);
-            addstringListHeader(request, Headers.GET_OBJECT_IF_NONE_MATCH, getObjectRequest.NonmatchingETagContraints);
+            AddDateHeader(request, Headers.GET_OBJECT_IF_MODIFIED_SINCE, getObjectRequest.ModifiedSinceConstraint);
+            AddDateHeader(request, Headers.GET_OBJECT_IF_UNMODIFIED_SINCE, getObjectRequest.UnmodifiedSinceConstraint);
+            AddstringListHeader(request, Headers.GET_OBJECT_IF_MATCH, getObjectRequest.MatchingETagConstraints);
+            AddstringListHeader(request, Headers.GET_OBJECT_IF_NONE_MATCH, getObjectRequest.NonmatchingETagContraints);
 
             IProgressListener progressListener = getObjectRequest.ProgressListener;
 
@@ -474,8 +492,8 @@ namespace KS3
             }
             fireProgressEvent(progressListener, ProgressEvent.COMPLETED);
 
-            ks3Object.setBucketName(bucketName);
-            ks3Object.setKey(key);
+            ks3Object.BucketName = bucketName;
+            ks3Object.Key = key;
 
             return ks3Object;
         }
@@ -503,56 +521,70 @@ namespace KS3
             return Invoke(request, new MetadataResponseHandler(), bucketName, key);
         }
 
-        /**
-         * Uploads the specified file to KS3 under the specified bucket and key name.
-         */
+        /// <summary>
+        /// Uploads the specified file to KS3 under the specified bucket and key name.
+        /// </summary>
+        /// <param name="bucketName"></param>
+        /// <param name="key"></param>
+        /// <param name="file"></param>
+        /// <returns></returns>
         public PutObjectResult PutObject(string bucketName, string key, FileInfo file)
         {
             PutObjectRequest putObjectRequest = new PutObjectRequest(bucketName, key, file);
-            putObjectRequest.setMetadata(new ObjectMetadata());
+            putObjectRequest.Metadata = new ObjectMetadata();
             return this.PutObject(putObjectRequest);
         }
 
-        /**
-         * Uploads the specified input stream and object metadata to KS3 under the specified bucket and key name. 
-         */
+        /// <summary>
+        /// Uploads the specified input stream and object metadata to KS3 under the specified bucket and key name. 
+        /// </summary>
+        /// <param name="bucketName"></param>
+        /// <param name="key"></param>
+        /// <param name="input"></param>
+        /// <param name="metadata"></param>
+        /// <returns></returns>
         public PutObjectResult PutObject(string bucketName, string key, Stream input, ObjectMetadata metadata)
         {
-            return this.PutObject(new PutObjectRequest(bucketName, key, input, metadata));
+            return PutObject(new PutObjectRequest(bucketName, key, input, metadata));
         }
 
-        /**
-         * Uploads a new object to the specified KS3 bucket.
-         */
+        /// <summary>
+        ///  Uploads a new object to the specified KS3 bucket.
+        /// </summary>
+        /// <param name="putObjectRequest"></param>
+        /// <returns></returns>
         public PutObjectResult PutObject(PutObjectRequest putObjectRequest)
         {
-            string bucketName = putObjectRequest.getBucketName();
-            string key = putObjectRequest.getKey();
-            ObjectMetadata metadata = putObjectRequest.getMetadata();
-            Stream input = putObjectRequest.getInputStream();
-            IProgressListener progressListener = putObjectRequest.getProgressListener();
+            var bucketName = putObjectRequest.BucketName;
+            var key = putObjectRequest.Key;
+            ObjectMetadata metadata = putObjectRequest.Metadata;
+            var input = putObjectRequest.InputStream;
+            IProgressListener progressListener = putObjectRequest.ProgressListener;
             if (metadata == null)
+            {
                 metadata = new ObjectMetadata();
+            }
 
             // If a file is specified for upload, we need to pull some additional
             // information from it to auto-configure a few options
-            if (putObjectRequest.getFile() != null)
+            if (putObjectRequest.File != null)
             {
-                FileInfo file = putObjectRequest.getFile();
+                FileInfo file = putObjectRequest.File;
 
                 // Always set the content length, even if it's already set
-                metadata.setContentLength(file.Length);
+                metadata.SetContentLength(file.Length);
 
                 // Only set the content type if it hasn't already been set
-                if (metadata.getContentType() == null)
-                    metadata.setContentType(Mimetypes.GetMimetype(file));
-
-                if (metadata.getContentMD5() == null)
+                if (metadata.GetContentType() == null)
+                {
+                    metadata.SetContentType(Mimetypes.GetMimetype(file));
+                }
+                if (metadata.GetContentMD5() == null)
                 {
                     using (FileStream fileStream = file.OpenRead())
                     {
                         MD5 md5 = MD5.Create();
-                        metadata.setContentMD5(Convert.ToBase64String(md5.ComputeHash(fileStream)));
+                        metadata.SetContentMD5(Convert.ToBase64String(md5.ComputeHash(fileStream)));
                     }
                 }
 
@@ -560,35 +592,40 @@ namespace KS3
             }
             else
             {
-                metadata.setContentLength(input.Length);
+                metadata.SetContentLength(input.Length);
 
-                if (metadata.getContentType() == null)
-                    metadata.setContentType(Mimetypes.DEFAULT_MIMETYPE);
-                if (metadata.getContentMD5() == null)
+                if (metadata.GetContentType() == null)
+                {
+                    metadata.SetContentType(Mimetypes.DEFAULT_MIMETYPE);
+                }
+                if (metadata.GetContentMD5() == null)
                 {
                     using (MD5 md5 = MD5.Create())
                     {
-                        metadata.setContentMD5(Convert.ToBase64String(md5.ComputeHash(input)));
+                        metadata.SetContentMD5(Convert.ToBase64String(md5.ComputeHash(input)));
                     }
 
                     input.Seek(0, SeekOrigin.Begin); // It is needed after calculated MD5.
                 }
             }
 
-            IRequest<PutObjectRequest> request = this.CreateRequest(bucketName, key, putObjectRequest, HttpMethod.PUT);
+            IRequest<PutObjectRequest> request = CreateRequest(bucketName, key, putObjectRequest, HttpMethod.PUT);
 
-            if (putObjectRequest.getAcl() != null)
-                addAclHeaders(request, putObjectRequest.getAcl());
-            else if (putObjectRequest.getCannedAcl() != null)
-                request.SetHeader(Headers.KS3_CANNED_ACL, putObjectRequest.getCannedAcl().GetCannedAclHeader());
-
+            if (putObjectRequest.Acl != null)
+            {
+                AddAclHeaders(request, putObjectRequest.Acl);
+            }
+            else if (putObjectRequest.CannedAcl != null)
+            {
+                request.SetHeader(Headers.KS3_CANNED_ACL, putObjectRequest.CannedAcl.GetCannedAclHeader());
+            }
             if (progressListener != null)
             {
                 input = new ProgressReportingInputStream(input, progressListener);
                 fireProgressEvent(progressListener, ProgressEvent.STARTED);
             }
 
-            populateRequestMetadata(metadata, request);
+            PopulateRequestMetadata(metadata, request);
             request.SetContent(input);
 
             //-----------------------------------------------
@@ -611,14 +648,18 @@ namespace KS3
             finally
             {
                 if (input != null)
+                {
                     input.Close();
+                }
             }
 
             fireProgressEvent(progressListener, ProgressEvent.COMPLETED);
 
-            PutObjectResult result = new PutObjectResult();
-            result.setETag(returnedMetadata.getETag());
-            result.setContentMD5(metadata.getContentMD5());
+            var result = new PutObjectResult
+            {
+                ETag = returnedMetadata.GetETag(),
+                ContentMD5 = metadata.GetContentMD5()
+            };
 
             return result;
         }
@@ -632,7 +673,7 @@ namespace KS3
             IRequest<CopyObjectRequest> request = this.CreateRequest(copyObjectRequest.DestinationBucket, copyObjectRequest.DestinationObject, copyObjectRequest, HttpMethod.PUT);
             request.GetHeaders().Add(Headers.XKssCopySource, "/" + copyObjectRequest.SourceBucket + "/" + UrlEncoder.Encode(copyObjectRequest.SourceObject, Encoding.UTF8));
             if (copyObjectRequest.AccessControlList != null)
-                addAclHeaders(request, copyObjectRequest.AccessControlList);
+                AddAclHeaders(request, copyObjectRequest.AccessControlList);
             else if (copyObjectRequest.CannedAcl != null)
                 request.SetHeader(Headers.KS3_CANNED_ACL, copyObjectRequest.CannedAcl.GetCannedAclHeader());
             request.GetHeaders()[Headers.CONTENT_LENGTH] = "0";
@@ -672,9 +713,9 @@ namespace KS3
                 }
                 request.GetHeaders().Add(Headers.GET_OBJECT_IF_NONE_MATCH, noEtags.ToString().TrimEnd(','));
             }
-            if (!headObjectRequest.ModifiedSinceConstraint.Equals(DateTime.MinValue))
+            if (headObjectRequest.ModifiedSinceConstraint.HasValue)
             {
-                request.GetHeaders().Add(Headers.GET_OBJECT_IF_MODIFIED_SINCE, headObjectRequest.ModifiedSinceConstraint.ToUniversalTime().ToString("r"));
+                request.GetHeaders().Add(Headers.GET_OBJECT_IF_MODIFIED_SINCE, headObjectRequest.ModifiedSinceConstraint.Value.ToUniversalTime().ToString("r"));
             }
             if (!headObjectRequest.UnmodifiedSinceConstraint.Equals(DateTime.MinValue))
             {
@@ -712,41 +753,45 @@ namespace KS3
             result = this.Invoke(request, new MultipartUploadResultUnmarshaller(), param.Bucketname, param.Objectkey);
             return result;
         }
-        /**
-         * upload multi file by part
-         * **/
-        public PartETag uploadPart(UploadPartRequest param)
+
+        /// <summary>
+        ///  upload multi file by part
+        /// </summary>
+        /// <param name="param"></param>
+        /// <returns></returns>
+        public PartETag UploadPart(UploadPartRequest param)
         {
-            string bucketName = param.getBucketname();
-            string key = param.getObjectkey();
-            ObjectMetadata metadata = param.getMetadata();
-            Stream input = param.getInputStream();
-            IProgressListener progressListener = param.getProgressListener();
+            var bucketName = param.BucketName;
+            var key = param.ObjectKey;
+            ObjectMetadata metadata = param.Metadata;
+            Stream input = param.InputStream;
+            IProgressListener progressListener = param.ProgressListener;
 
             if (metadata == null)
+            {
                 metadata = new ObjectMetadata();
-
+            }
             // If a file is specified for upload, we need to pull some additional
             // information from it to auto-configure a few options
-            metadata.setContentLength(input.Length);
+            metadata.SetContentLength(input.Length);
 
-            if (metadata.getContentType() == null)
-                metadata.setContentType(Mimetypes.DEFAULT_MIMETYPE);
-            if (metadata.getContentMD5() == null)
+            if (string.IsNullOrWhiteSpace(metadata.GetContentType()))
+            {
+                metadata.SetContentType(Mimetypes.DEFAULT_MIMETYPE);
+            }
+            if (metadata.GetContentMD5() == null)
             {
                 using (MD5 md5 = MD5.Create())
                 {
-                    metadata.setContentMD5(Convert.ToBase64String(md5.ComputeHash(input)));
+                    metadata.SetContentMD5(Convert.ToBase64String(md5.ComputeHash(input)));
                 }
 
                 input.Seek(0, SeekOrigin.Begin); // It is needed after calculated MD5.
             }
 
-            IRequest<UploadPartRequest> request = this.CreateRequest(param.getBucketname(), param.getObjectkey(), param, HttpMethod.PUT);
-            request.SetParameter("partNumber", param.getPartNumber().ToString());
-            request.SetParameter("uploadId", param.getUploadId());
-
-
+            IRequest<UploadPartRequest> request = this.CreateRequest(param.BucketName, param.ObjectKey, param, HttpMethod.PUT);
+            request.SetParameter("partNumber", param.PartNumber.ToString());
+            request.SetParameter("uploadId", param.UploadId);
 
             if (progressListener != null)
             {
@@ -754,7 +799,7 @@ namespace KS3
                 fireProgressEvent(progressListener, ProgressEvent.STARTED);
             }
 
-            populateRequestMetadata(metadata, request);
+            PopulateRequestMetadata(metadata, request);
             request.SetContent(input);
 
             //-----------------------------------------------
@@ -777,49 +822,58 @@ namespace KS3
             finally
             {
                 if (input != null)
+                {
                     input.Close();
+
+                }
             }
 
             fireProgressEvent(progressListener, ProgressEvent.COMPLETED);
 
-            PartETag result = new PartETag(param.getPartNumber(), returnedMetadata.getETag());
+            PartETag result = new PartETag(param.PartNumber, returnedMetadata.GetETag());
 
             return result;
         }
-        /**
-         * getlist had uploaded part list
-         * **/
-        public ListMultipartUploadsResult getListMultipartUploads(ListMultipartUploadsRequest param)
+
+        /// <summary>
+        /// getlist had uploaded part list
+        /// </summary>
+        /// <param name="param"></param>
+        /// <returns></returns>
+        public ListMultipartUploadsResult GetListMultipartUploads(ListMultipartUploadsRequest param)
         {
-            IRequest<ListMultipartUploadsRequest> request = this.CreateRequest(param.getBucketname(), param.getObjectkey(), param, HttpMethod.GET);
-            request.SetParameter("uploadId", param.getUploadId());
+            IRequest<ListMultipartUploadsRequest> request = CreateRequest(param.BucketName, param.ObjectKey, param, HttpMethod.GET);
+            request.SetParameter("uploadId", param.UploadId);
             request.GetHeaders()[Headers.CONTENT_LENGTH] = "0";
-            ListMultipartUploadsResult result = new ListMultipartUploadsResult();
-            result = this.Invoke(request, new ListMultipartUploadsResultUnmarshaller(), param.getBucketname(), param.getObjectkey());
+            ListMultipartUploadsResult result = Invoke(request, new ListMultipartUploadsResultUnmarshaller(), param.BucketName, param.ObjectKey);
             return result;
         }
-        /**
-         * submit the all part,the server will complete join part
-         * **/
-        public CompleteMultipartUploadResult completeMultipartUpload(CompleteMultipartUploadRequest param)
+
+        /// <summary>
+        /// submit the all part,the server will complete join part
+        /// </summary>
+        /// <param name="param"></param>
+        /// <returns></returns>
+        public CompleteMultipartUploadResult CompleteMultipartUpload(CompleteMultipartUploadRequest param)
         {
-            IRequest<CompleteMultipartUploadRequest> request = this.CreateRequest(param.BucketName, param.ObjectKey, param, HttpMethod.POST);
+            IRequest<CompleteMultipartUploadRequest> request = CreateRequest(param.BucketName, param.ObjectKey, param, HttpMethod.POST);
             request.SetParameter("uploadId", param.UploadId);
             request.SetHeader(Headers.CONTENT_LENGTH, param.Content.Length.ToString());
             request.SetContent(param.Content);
-            CompleteMultipartUploadResult result = new CompleteMultipartUploadResult();
-            result = Invoke(request, new CompleteMultipartUploadResultUnmarshaller(), param.BucketName, param.ObjectKey);
+            CompleteMultipartUploadResult result = Invoke(request, new CompleteMultipartUploadResultUnmarshaller(), param.BucketName, param.ObjectKey);
             return result;
         }
-        /**
-         * abort the upload opertion by uploadid
-         * **/
+
+        /// <summary>
+        /// abort the upload opertion by uploadid
+        /// </summary>
+        /// <param name="param"></param>
         public void AbortMultipartUpload(AbortMultipartUploadRequest param)
         {
-            IRequest<AbortMultipartUploadRequest> request = this.CreateRequest(param.BucketName, param.ObjectKey, param, HttpMethod.DELETE);
+            IRequest<AbortMultipartUploadRequest> request = CreateRequest(param.BucketName, param.ObjectKey, param, HttpMethod.DELETE);
             request.SetParameter("uploadId", param.UploadId);
             request.GetHeaders()[Headers.CONTENT_LENGTH] = "0";
-            this.Invoke(request, voidResponseHandler, param.BucketName, param.ObjectKey);
+            Invoke(request, voidResponseHandler, param.BucketName, param.ObjectKey);
         }
 
         /**
@@ -862,17 +916,18 @@ namespace KS3
             this.SetObjectAcl(new SetObjectAclRequest(bucketName, key, cannedAcl));
         }
 
-        /**
-         * Sets the AccessControlList for the specified object in KS3.
-         */
+        /// <summary>
+        /// Sets the AccessControlList for the specified object in KS3.
+        /// </summary>
+        /// <param name="setObjectAclRequest"></param>
         public void SetObjectAcl(SetObjectAclRequest setObjectAclRequest)
         {
-            string bucketName = setObjectAclRequest.getBucketName();
-            string key = setObjectAclRequest.getKey();
-            AccessControlList acl = setObjectAclRequest.getAcl();
-            CannedAccessControlList cannedAcl = setObjectAclRequest.getCannedAcl();
+            var bucketName = setObjectAclRequest.BukcetName;
+            var key = setObjectAclRequest.Key;
+            AccessControlList acl = setObjectAclRequest.Acl;
+            CannedAccessControlList cannedAcl = setObjectAclRequest.CannedAcl;
 
-            IRequest<SetObjectAclRequest> request = this.CreateRequest(bucketName, key, setObjectAclRequest, HttpMethod.PUT);
+            IRequest<SetObjectAclRequest> request = CreateRequest(bucketName, key, setObjectAclRequest, HttpMethod.PUT);
 
             if (acl != null)
             {
@@ -889,7 +944,7 @@ namespace KS3
             }
             request.SetParameter("acl", null);
 
-            this.Invoke(request, this.voidResponseHandler, bucketName, key);
+            Invoke(request, this.voidResponseHandler, bucketName, key);
         }
         /// <summary>
         /// generate presignerd url for private object with in limit times
@@ -936,7 +991,7 @@ namespace KS3
                 KS3Signer<NoneKS3Request> ks3Signer = createSigner<NoneKS3Request>(HttpMethod.GET.ToString(), bucketName, key);
                 string signer = ks3Signer.GetSignature(this._ks3Credentials, expires.ToString());
                 url += @"http://" + bucketName + "." + Constants.KS3_HOSTNAME
-                             + "/" + filterSpecial(UrlEncoder.Encode(key, Constants.DEFAULT_ENCODING)) + "?AccessKeyId="
+                             + "/" + FilterSpecial(UrlEncoder.Encode(key, Constants.DEFAULT_ENCODING)) + "?AccessKeyId="
                              + UrlEncoder.Encode(this._ks3Credentials.GetKS3AccessKeyId(), Constants.DEFAULT_ENCODING)
                              + "&Expires=" + expires + "&Signature="
                              + UrlEncoder.Encode(signer, Constants.DEFAULT_ENCODING) + "&" + param;
@@ -959,7 +1014,7 @@ namespace KS3
             IRequest<PutAdpRequest> request = CreateRequest(putAdpRequest.BucketName, putAdpRequest.ObjectKey, putAdpRequest, HttpMethod.PUT);
             request.GetParameters().Add("adp", null);
 
-            request.GetHeaders().Add(Headers.AsynchronousProcessingList, putAdpRequest.convertAdpsToString());
+            request.GetHeaders().Add(Headers.AsynchronousProcessingList, putAdpRequest.ConvertAdpsToString());
             request.GetHeaders().Add(Headers.NotifyURL, putAdpRequest.NotifyURL);
             request.SetHeader(Headers.CONTENT_LENGTH, "0");
             PutAdpResult result = Invoke(request, new PutAdpResponseHandler(), putAdpRequest.BucketName, putAdpRequest.ObjectKey);
@@ -1017,10 +1072,11 @@ namespace KS3
          */
         private X Invoke<X, Y>(IRequest<Y> request, IHttpResponseHandler<X> responseHandler, string bucket, string key) where Y : KS3Request
         {
-            IDictionary<string, string> parameters = request.GetOriginalRequest().copyPrivateRequestParameters();
+            IDictionary<string, string> parameters = request.GetOriginalRequest().CopyPrivateRequestParameters();
             foreach (string name in parameters.Keys)
+            {
                 request.SetParameter(name, parameters[name]);
-
+            }
             request.SetTimeOffset(timeOffset);
 
             /**
@@ -1035,9 +1091,10 @@ namespace KS3
             /**
              * Set the credentials which will be used by the KS3Signer later.
              */
-            if (request.GetOriginalRequest().getRequestCredentials() == null)
-                request.GetOriginalRequest().setRequestCredentials(this._ks3Credentials);
-
+            if (request.GetOriginalRequest().Credentials == null)
+            {
+                request.GetOriginalRequest().Credentials = _ks3Credentials;
+            }
             return _client.Excute(request, responseHandler, createSigner(request, bucket, key));
         }
 
@@ -1063,63 +1120,74 @@ namespace KS3
             listener.ProgressChanged(e);
         }
 
-        /**
-         * Populates the specified request object with the appropriate headers from
-         * the {@link ObjectMetadata} object.
-         */
-        private static void populateRequestMetadata<X>(ObjectMetadata metadata, IRequest<X> request) where X : KS3Request
+        /// <summary>
+        /// Populates the specified request object with the appropriate headers from the {@link ObjectMetadata} object.
+        /// </summary>
+        /// <typeparam name="X"></typeparam>
+        /// <param name="metadata"></param>
+        /// <param name="request"></param>
+        private static void PopulateRequestMetadata<X>(ObjectMetadata metadata, IRequest<X> request) where X : KS3Request
         {
-            IDictionary<string, Object> rawMetadata = metadata.getRawMetadata();
-            if (rawMetadata != null)
+            foreach (var kv in metadata.Metadata)
             {
-                foreach (string name in rawMetadata.Keys)
-                    request.SetHeader(name, rawMetadata[name].ToString());
+                request.SetHeader(kv.Key, kv.Value.ToString());
             }
 
-            IDictionary<string, string> userMetadata = metadata.getUserMetadata();
-            if (userMetadata != null)
+            foreach (var kv in metadata.UserMetadata)
             {
-                foreach (string name in userMetadata.Keys)
-                    request.SetHeader(Headers.KS3_USER_METADATA_PREFIX + name, userMetadata[name]);
+                request.SetHeader(Headers.KS3_USER_METADATA_PREFIX + kv.Key, kv.Value);
             }
         }
 
-        /**
-	     * Adds the specified date header in RFC 822 date format to the specified
-	     * request. This method will not add a date header if the specified date
-	     * value is <code>null</code>.
-	     */
-        private static void addDateHeader<X>(IRequest<X> request, string header, DateTime? value)
+        /// <summary>
+        /// Adds the specified date header in RFC 822 date format to the specified request.
+        /// This method will not add a date header if the specified date value is <code>null</code>.
+        /// </summary>
+        /// <typeparam name="X"></typeparam>
+        /// <param name="request"></param>
+        /// <param name="header"></param>
+        /// <param name="value"></param>
+        private static void AddDateHeader<X>(IRequest<X> request, string header, DateTime? value)
         {
             if (value != null)
+            {
                 request.SetHeader(header, SignerUtils.GetSignatrueDate(value.Value));
+            }
         }
 
-        /*
-         * Adds the specified string list header, joined together separated with
-         * commas, to the specified request.
-         * This method will not add a string list header if the specified values
-         * are <code>null</code> or empty.
-         */
-        private static void addstringListHeader<X>(IRequest<X> request, string header, IList<string> values)
+        /// <summary>
+        /// Adds the specified string list header, joined together separated with commas, to the specified request. 
+        /// This method will not add a string list header if the specified values are <code>null</code> or empty.
+        /// </summary>
+        /// <typeparam name="X"></typeparam>
+        /// <param name="request"></param>
+        /// <param name="header"></param>
+        /// <param name="values"></param>
+        private static void AddstringListHeader<X>(IRequest<X> request, string header, List<string> values)
         {
             if (values != null && values.Count > 0)
+            {
                 request.SetHeader(header, string.Join(", ", values));
+            }
         }
-        private static string filterSpecial(string key)
+        private static string FilterSpecial(string key)
         {
-            if (!string.IsNullOrEmpty(key))
+            if (!string.IsNullOrWhiteSpace(key))
             {
                 key = key.Replace("%5C", "/").Replace("//", "/%2F");
             }
             return key;
         }
-        /**
-         * Sets the acccess control headers for the request given.
-         */
-        private static void addAclHeaders<X>(IRequest<X> request, AccessControlList acl) where X : KS3Request
+
+        /// <summary>
+        /// Sets the acccess control headers for the request given.
+        /// </summary>
+        /// <typeparam name="X"></typeparam>
+        /// <param name="request"></param>
+        /// <param name="acl"></param>
+        private static void AddAclHeaders<X>(IRequest<X> request, AccessControlList acl) where X : KS3Request
         {
-            ISet<Grant> grants = acl.getGrants();
+            ISet<Grant> grants = acl.GetGrants();
             IDictionary<string, IList<IGrantee>> grantsByPermission = new Dictionary<string, IList<IGrantee>>();
             foreach (Grant grant in grants)
             {
@@ -1129,7 +1197,7 @@ namespace KS3
                 }
                 grantsByPermission[grant.Permission].Add(grant.Grantee);
             }
-            foreach (string permission in Permission.listPermissions())
+            foreach (string permission in Permission.ListPermissions())
             {
                 if (grantsByPermission.ContainsKey(permission))
                 {
@@ -1144,7 +1212,7 @@ namespace KS3
                             granteestring.Append(", ");
                         granteestring.Append(grantee.GetTypeIdentifier() + "=\"" + grantee.GetIdentifier() + "\"");
                     }
-                    request.SetHeader(Permission.getHeaderName(permission), granteestring.ToString());
+                    request.SetHeader(Permission.GetHeaderName(permission), granteestring.ToString());
                 }
             }
         } // end of addAclHeader

@@ -4,7 +4,7 @@
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;net45</TargetFrameworks>
     <AssemblyName>KS3</AssemblyName>
-    <PackageId>KS3-dotnet</PackageId>
+    <PackageId>ks3-dotnet</PackageId>
     <RootNamespace>KS3</RootNamespace>
     <Description>金山云对象存储KS3 SDK</Description>
   </PropertyGroup>

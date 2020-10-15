@@ -1,46 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace KS3.Model
+﻿namespace KS3.Model
 {
     public class Owner
     {
-        private String displayName;
-        private String id;
+        public string Id { get; set; }
+        public string DisplayName { get; set; }
 
-        public Owner() { }
-
-        public Owner(String id, String displayName)
+        public Owner()
         {
-            this.id = id;
-            this.displayName = displayName;
+
         }
 
-        public override String ToString()
+        public Owner(string id, string displayName)
         {
-            return "KS3Owner [name=" + this.displayName + ", id=" + this.id + "]";
+            Id = id;
+            DisplayName = displayName;
         }
 
-        public String getId()
+        public override string ToString()
         {
-            return this.id;
-        }
-
-        public void setId(String id)
-        {
-            this.id = id;
-        }
-
-        public String getDisplayName()
-        {
-            return this.displayName;
-        }
-
-        public void setDisplayName(String name)
-        {
-            this.displayName = name;
+            return $"KS3Owner [name={DisplayName}, id={Id}]";
         }
     }
 }

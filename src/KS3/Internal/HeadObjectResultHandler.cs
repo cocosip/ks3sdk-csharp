@@ -28,7 +28,7 @@ namespace KS3.Internal
         }
         private void ConvertObjectMetaData(HeadObjectResult result,HttpWebResponse response) {
             ObjectMetadata metadata = new ObjectMetadata();
-            RestUtils.populateObjectMetadata(response, metadata);
+            RestUtils.PopulateObjectMetadata(response, metadata);
             result.ObjectMetadata = metadata;
         }
     }

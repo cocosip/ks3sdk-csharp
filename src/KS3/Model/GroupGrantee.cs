@@ -42,16 +42,18 @@
 
         public override int GetHashCode()
         {
-            return this._groupUri.GetHashCode();
+            return _groupUri.GetHashCode();
         }
 
         public override bool Equals(object obj)
         {
-            if (obj == null) return false;
-
-            if (obj.GetType() == this.GetType())
+            if (obj == null)
             {
-                GroupGrantee other = (GroupGrantee)obj;
+                return false;
+            }
+
+            if (obj is GroupGrantee other)
+            {
                 return other._groupUri.Equals(other._groupUri);
             }
 

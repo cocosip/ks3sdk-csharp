@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using KS3.Model;
+using System;
 using System.IO;
+using System.Text;
 using System.Xml;
-
-using KS3.Model;
 
 namespace KS3.Transform
 {

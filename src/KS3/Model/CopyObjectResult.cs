@@ -7,5 +7,6 @@ namespace KS3.Model
         public DateTime LastModified { get; set; }
 
         public string ETag { get; set; }
+
     }
 }

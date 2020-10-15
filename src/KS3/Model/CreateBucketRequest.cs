@@ -1,8 +1,8 @@
 ﻿namespace KS3.Model
 {
-    /**
-     * Provides options for creating an KS3 bucket.
-     */
+    /// <summary>
+    ///  Provides options for creating an KS3 bucket.
+    /// </summary>
     public class CreateBucketRequest : KS3Request
     {
         /// <summary>

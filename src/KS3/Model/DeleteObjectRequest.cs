@@ -1,8 +1,8 @@
 ﻿namespace KS3.Model
 {
-    /**
-     * Provides options for deleting a specified object in a specified bucket. 
-     */
+    /// <summary>
+    /// Provides options for deleting a specified object in a specified bucket. 
+    /// </summary>
     public class DeleteObjectRequest : KS3Request
     {
 

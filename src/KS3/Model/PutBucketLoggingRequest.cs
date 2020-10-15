@@ -1,8 +1,5 @@
-﻿using KS3.Internal;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Xml.Linq;
 
@@ -10,43 +7,37 @@ namespace KS3.Model
 {
     public class PutBucketLoggingRequest : KS3Request
     {
-        private GetBucketLoggingResult bucketLogging;
+        public GetBucketLoggingResult BucketLogging { get; set; }
 
-        public GetBucketLoggingResult BucketLogging
-        {
-            get { return bucketLogging; }
-            set { bucketLogging = value; }
-        }
-        private String bucketName;
+        public string BucketName { get; set; }
 
-        public String BucketName
+        private void Validate()
         {
-            get { return bucketName; }
-            set { bucketName = value; }
-        }
-        private void validate()
-        {
-            if (String.IsNullOrEmpty(bucketName))
+            if (string.IsNullOrWhiteSpace(BucketName))
             {
                 throw new Exception("bucketname is not null");
             }
-            if (bucketLogging.Enable == true && bucketLogging.TargetPrefix == null)
+            if (BucketLogging != null)
             {
-                throw new Exception("TargetPrefix is not null");
+
+                if (BucketLogging.Enable == true && BucketLogging.TargetPrefix == null)
+                {
+                    throw new Exception("TargetPrefix is not null");
+                }
             }
         }
-        private String getXmlContent()
+        private string GetXmlContent()
         {
-            validate();
+            Validate();
             XNamespace v = "http://s3.amazonaws.com/doc/2006-03-01/";
             XElement root = new XElement(v + "BucketLoggingStatus");
-            if (bucketLogging.Enable)
+            if (BucketLogging.Enable)
             {
                 XElement LoggingEnabled = new XElement("LoggingEnabled");
-                LoggingEnabled.Add(new XElement("TargetBucket", bucketLogging.TargetBucket));
-                LoggingEnabled.Add(new XElement("TargetPrefix", bucketLogging.TargetPrefix));
+                LoggingEnabled.Add(new XElement("TargetBucket", BucketLogging.TargetBucket));
+                LoggingEnabled.Add(new XElement("TargetPrefix", BucketLogging.TargetPrefix));
                 XElement TargetGrants = new XElement("TargetGrants");
-                foreach (Grant grant in bucketLogging.TargetGrants)
+                foreach (Grant grant in BucketLogging.TargetGrants)
                 {
                     XElement Grant = new XElement("Grant");
                     if (grant.GetType().Equals(typeof(CanonicalGrantee)))
@@ -80,18 +71,15 @@ namespace KS3.Model
             }
             return root.ToString();
         }
+
         /// <summary>
         /// return the xml stream content
         /// </summary>
         /// <returns></returns>
-        public Stream toXmlAdapter()
+        public Stream ToXmlAdapter()
         {
-            return new MemoryStream(Encoding.Default.GetBytes(getXmlContent()));
+            return new MemoryStream(Encoding.Default.GetBytes(GetXmlContent()));
         }
-        //public string getMd5()
-        //{
-        //    byte[] md5 = Md5Util.md5Digest(getXmlContent());
-        //    return Convert.ToBase64String(md5);
-        //}
+ 
     }
 }

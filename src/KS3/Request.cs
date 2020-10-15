@@ -8,99 +8,110 @@ namespace KS3
 {
     public interface IRequest<T>
     {
-        /**
-         * Sets the specified header to this request.
-         */
+        /// <summary>
+        /// Sets the specified header to this request.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="value"></param>
         void SetHeader(string name, string value);
-        
-        /**
-         * Returns a map of all the headers included in this request.
-         */
+
+        /// <summary>
+        /// Returns a map of all the headers included in this request.
+        /// </summary>
+        /// <returns></returns>
         IDictionary<string, string> GetHeaders();
 
-        /**
-         * Sets all headers, clearing any existing ones.
-         */
+        /// <summary>
+        /// Sets all headers, clearing any existing ones.
+        /// </summary>
+        /// <param name="headers"></param>
         void SetHeaders(Dictionary<string, string> headers);
 
-        /**
-         * Sets the path to the resource being requested.
-         */
+        /// <summary>
+        /// Sets the path to the resource being requested.
+        /// </summary>
+        /// <param name="path"></param>
         void SetResourcePath(string path);
 
-        /**
-         * Returns the path to the resource being requested.
-         */
+        /// <summary>
+        /// Returns the path to the resource being requested.
+        /// </summary>
+        /// <returns></returns>
         string GetResourcePath();
 
-        /**
-         * Sets the specified request parameter to this request.
-         */
+        /// <summary>
+        /// Sets the specified request parameter to this request.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="value"></param>
         void SetParameter(string name, string value);
 
-        /**
-         * Returns a map of all parameters in this request.
-         */
+        /// <summary>
+        /// Returns a map of all parameters in this request.
+        /// </summary>
+        /// <returns></returns>
         IDictionary<string, string> GetParameters();
 
-        /**
-         * Sets all parameters, clearing any existing values.
-         */
+        /// <summary>
+        /// Sets all parameters, clearing any existing values.
+        /// </summary>
+        /// <param name="parameters"></param>
         void SetParameters(Dictionary<string, string> parameters);
 
-        /**
-         * Returns the service endpoint to which this request should be sent.
-         */
+        /// <summary>
+        /// Returns the service endpoint to which this request should be sent.
+        /// </summary>
+        /// <returns></returns>
         Uri GetEndpoint();
 
-        /**
-         * Sets the service endpoint to which this request should be sent.
-         */
+        /// <summary>
+        /// Sets the service endpoint to which this request should be sent.
+        /// </summary>
+        /// <param name="endpoint"></param>
         void SetEndpoint(Uri endpoint);
 
-        /**
-	     * Returns the HTTP method (GET, POST, etc) to use when sending this
-	     * request.
-	     */ 
+        /// <summary>
+        /// Returns the HTTP method (GET, POST, etc) to use when sending this request.
+        /// </summary>
+        /// <returns></returns>
         HttpMethod GetHttpMethod();
 
-	    /**
-	     * Sets the HTTP method (GET, POST, etc) to use when sending this request.
-         */
+        /// <summary>
+        /// Sets the HTTP method (GET, POST, etc) to use when sending this request.
+        /// </summary>
+        /// <param name="httMethod"></param>
         void SetHttpMethod(HttpMethod httMethod);
-	    
-        /**
-	     * Returns the optional stream containing the payload data to include for
-	     * this request.  Not all requests will contain payload data.
-	     */
+
+        /// <summary>
+        /// Returns the optional stream containing the payload data to include for this request.  Not all requests will contain payload data.
+        /// </summary>
+        /// <returns></returns>
         Stream GetContent();
 
-	    /**
-	     * Sets the optional stream containing the payload data to include for this
-	     * request. Not all requests will contain payload data.
-         */
+        /// <summary>
+        /// Sets the optional stream containing the payload data to include for this request. Not all requests will contain payload data.
+        /// </summary>
+        /// <param name="content"></param>
         void SetContent(Stream content);
 
-        /**
-         * Returns the original, user facing request object which this internal
-         * request object is representing.
-         */
+        /// <summary>
+        /// Returns the original, user facing request object which this internal request object is representing.
+        /// </summary>
+        /// <returns></returns>
         KS3Request GetOriginalRequest();
 
-        /**
-         * Returns the optional value for time offset for this request.  This
-         * will be used by the signer to adjust for potential clock skew.  
-         * Value is in seconds, positive values imply the current clock is "fast",
-         * negative values imply clock is slow.
-         */
+        /// <summary>
+        /// Returns the optional value for time offset for this request. 
+        /// This will be used by the signer to adjust for potential clock skew. Value is in seconds, positive values imply the current clock is "fast", negative values imply clock is slow.
+        /// </summary>
+        /// <returns></returns>
         int GetTimeOffset();
 
-        /**
-         * Sets the optional value for time offset for this request.  This
-         * will be used by the signer to adjust for potential clock skew.  
-         * Value is in seconds, positive values imply the current clock is "fast",
-         * negative values imply clock is slow.
-         */
+        /// <summary>
+        /// Sets the optional value for time offset for this request.
+        /// This will be used by the signer to adjust for potential clock skew. Value is in seconds, positive values imply the current clock is "fast", negative values imply clock is slow.
+        /// </summary>
+        /// <param name="timeOffset"></param>
         void SetTimeOffset(int timeOffset);
     }
 }

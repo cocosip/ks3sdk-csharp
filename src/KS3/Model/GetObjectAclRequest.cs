@@ -21,7 +21,7 @@
         }
 
         /// <summary>
-        ///    Constructs a new GetObjectAclRequest object, ready to retrieve the ACL for the specified bucket when executed.
+        /// Constructs a new GetObjectAclRequest object, ready to retrieve the ACL for the specified bucket when executed.
         /// </summary>
         /// <param name="bucketName"></param>
         /// <param name="key"></param>

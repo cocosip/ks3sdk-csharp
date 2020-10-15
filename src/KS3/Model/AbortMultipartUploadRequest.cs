@@ -2,7 +2,6 @@
 {
     public class AbortMultipartUploadRequest : KS3Request
     {
-
         public string BucketName { get; set; }
 
         public string ObjectKey { get; set; }

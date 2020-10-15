@@ -70,8 +70,10 @@ namespace KS3.Http
                 try
                 {
                     // Sign the request if a signer was provided
-                    if (ks3Signer != null && request.GetOriginalRequest().getRequestCredentials() != null)
-                        ks3Signer.Sign(request, request.GetOriginalRequest().getRequestCredentials());
+                    if (ks3Signer != null && request.GetOriginalRequest().Credentials != null)
+                    {
+                        ks3Signer.Sign(request, request.GetOriginalRequest().Credentials);
+                    }
                     request.SetResourcePath(request.GetResourcePath().Replace("%5C", "/").Replace("//", "/%2F"));
                     if (request.GetResourcePath().EndsWith("%2F"))
                     {
