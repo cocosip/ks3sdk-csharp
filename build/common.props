@@ -1,0 +1,12 @@
+<Project>
+  <Import Project="version.props" />
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <Authors>virtual</Authors>
+    <Product>DotCommon</Product>
+    <PackageProjectUrl>https://github.com/cocosip/ks3sdk-csharp</PackageProjectUrl>
+    <PackageLicense>https://github.com/cocosip/ks3sdk-csharp/master/LICENSE</PackageLicense>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/cocosip/ks3sdk-csharp</RepositoryUrl>
+  </PropertyGroup>
+</Project>

@@ -1,0 +1,144 @@
+﻿using KS3.KS3Exception;
+using KS3.Model;
+using System.IO;
+
+namespace KS3.Internal
+{
+    public class ProgressReportingInputStream : Stream
+    {
+        /** The threshold of bytes between notifications. */
+        private static readonly int NOTIFICATION_THRESHOLD = Constants.DEFAULT_STREAM_BUFFER_SIZE;
+
+        /** The listener to notify. */
+        private readonly IProgressListener _listener;
+
+        /** The original stream. */
+        private readonly Stream _stream;
+
+        /** The number of bytes read that the listener hasn't been notified about yet. */
+        private int unnotifiedByteCount = 0;
+
+        /**
+         * Creates a repeatable input stream based on a file.
+         */
+        public ProgressReportingInputStream(Stream stream, IProgressListener listener)
+        {
+            _stream = stream;
+            _listener = listener;
+        }
+
+        private void notify(int bytesRead)
+        {
+            unnotifiedByteCount += bytesRead;
+            if (unnotifiedByteCount >= NOTIFICATION_THRESHOLD)
+                Commit();
+        }
+
+        private void Commit()
+        {
+            ProgressEvent e = new ProgressEvent(ProgressEvent.TRANSFERRED);
+            e.setBytesTransferred(this.unnotifiedByteCount);
+
+            _listener.ProgressChanged(e);
+
+            unnotifiedByteCount = 0;
+        }
+
+        public override int ReadByte()
+        {
+            if (!_listener.AskContinue())
+            {
+                Commit();
+                throw new ProgressInterruptedException("ProgreesReportingInputStream: ReadByte has been interrupted.");
+            }
+
+            int data = _stream.ReadByte();
+            if (data != -1) notify(1);
+            else Commit();
+
+            return data;
+        }
+
+        public override int Read(byte[] buffer, int offset, int count)
+        {
+            if (!_listener.AskContinue())
+            {
+                Commit();
+                throw new ProgressInterruptedException("ProgreesReportingInputStream: Read has been interrupted.");
+            }
+
+            int bytesRead = _stream.Read(buffer, offset, count);
+            if (bytesRead > 0) notify(bytesRead);
+            else Commit();
+
+            return bytesRead;
+        }
+
+        public override void Write(byte[] buffer, int offset, int count)
+        {
+            _stream.Write(buffer, offset, count);
+        }
+
+        public override bool CanRead
+        {
+            get { return _stream.CanRead; }
+        }
+
+        public override bool CanSeek
+        {
+            get { return _stream.CanSeek; }
+        }
+
+        public override bool CanWrite
+        {
+            get { return _stream.CanWrite; }
+        }
+
+        public override long Seek(long offset, SeekOrigin origin)
+        {
+            return _stream.Seek(offset, origin);
+        }
+
+        public override long Length
+        {
+            get { return _stream.Length; }
+        }
+
+        public override void SetLength(long value)
+        {
+            _stream.SetLength(value);
+        }
+
+        public override long Position
+        {
+            get
+            {
+                return _stream.Position;
+            }
+            set
+            {
+                _stream.Position = value;
+            }
+        }
+
+        public override void Flush()
+        {
+            _stream.Flush();
+
+            if (unnotifiedByteCount > 0)
+            {
+                Commit();
+            }
+        }
+
+        public override void Close()
+        {
+            _stream.Close();
+
+            if (unnotifiedByteCount > 0)
+            {
+                Commit();
+            }
+        }
+    }
+}
