@@ -1,9 +1,5 @@
 ﻿using KS3.Model;
-using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Xml.Linq;
 
 namespace KS3.Transform
@@ -14,7 +10,7 @@ namespace KS3.Transform
         {
             DeleteMultipleObjectsResult reuslt = new DeleteMultipleObjectsResult();
             XDocument doc = XDocument.Load(input);
-            var xml = doc.Elements();
+           // var xml = doc.Elements();
             return reuslt;
         }
     }

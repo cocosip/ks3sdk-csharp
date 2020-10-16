@@ -1,27 +1,25 @@
 ﻿using KS3.Internal;
 using KS3.Model;
-using System;
 
 namespace KS3.Auth
 {
     public class KS3Signer<T> : ISigner<T> where T : KS3Request
     {
-        /**
-         * The HTTP verb (GET, PUT, HEAD, DELETE) the request to sign
-         * is using.
-         */
+        /// <summary>
+        /// The HTTP verb (GET, PUT, HEAD, DELETE) the request to sign is using.
+        /// </summary>
         private readonly string _httpVerb;
 
-        /**
-         * The canonical resource path portion of the S3 string to sign.
-         * Examples: "/", "/<bucket name>/", or "/<bucket name>/<key>"
-         */
+        /// <summary>
+        /// The canonical resource path portion of the S3 string to sign. Examples: "/", "/<bucket name>/", or "/<bucket name>/<key>"
+        /// </summary>
         private readonly string _resourcePath;
 
-        /**
-         * Constructs a new KS3Signer to sign requests based on the
-         * KS3 credentials, HTTP method and canonical KS3 resource path.
-         */
+        /// <summary>
+        /// Constructs a new KS3Signer to sign requests based on the KS3 credentials, HTTP method and canonical KS3 resource path.
+        /// </summary>
+        /// <param name="httpVerb"></param>
+        /// <param name="resourcePath"></param>
         public KS3Signer(string httpVerb, string resourcePath)
         {
             _httpVerb = httpVerb;
@@ -35,14 +33,15 @@ namespace KS3.Auth
 
             string canonicalString = RestUtils.makeKS3CanonicalString(_httpVerb, _resourcePath, request, null);
 
-            string signature = SignerUtils.Base64(SignerUtils.HmacSha1(credentials.GetKS3SecretKey(), canonicalString));
-            request.SetHeader("Authorization", "KSS " + credentials.GetKS3AccessKeyId() + ":" + signature);
+            string signature = SignerUtils.Base64(SignerUtils.HmacSha1(credentials.KS3SecretKey, canonicalString));
+            request.SetHeader("Authorization", "KSS " + credentials.KS3AccessKeyId + ":" + signature);
         }
+
         public string GetSignature(IKS3Credentials credentials, string expires)
         {
             var voidRequest = new DefaultRequest<NoneKS3Request>(new NoneKS3Request());
             string canonicalString = RestUtils.makeKS3CanonicalString(_httpVerb, _resourcePath, voidRequest, expires);
-            String signature = SignerUtils.Base64(SignerUtils.HmacSha1(credentials.GetKS3SecretKey(), canonicalString));
+            string signature = SignerUtils.Base64(SignerUtils.HmacSha1(credentials.KS3SecretKey, canonicalString));
             return signature;
         }
 

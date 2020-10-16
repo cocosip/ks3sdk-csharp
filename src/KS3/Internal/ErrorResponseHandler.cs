@@ -7,8 +7,10 @@ namespace KS3.Internal
 {
     public class ErrorResponseHandler : IHttpResponseHandler<ServiceException>
     {
-        /** The SAX unmarshaller to use when handling the response from KS3 */
-        private ErrorResponseUnmarshaller _unmarshaller;
+        /// <summary>
+        /// The SAX unmarshaller to use when handling the response from KS3
+        /// </summary>
+        private readonly ErrorResponseUnmarshaller _unmarshaller;
 
         public ErrorResponseHandler(ErrorResponseUnmarshaller unmarshaller)
         {
@@ -19,7 +21,8 @@ namespace KS3.Internal
         public ServiceException Handle(HttpWebResponse errorResponse)
         {
             ServiceException serviceException = _unmarshaller.Unmarshall(errorResponse.GetResponseStream());
-            serviceException.setStatusCode((int)errorResponse.StatusCode);
+
+            serviceException.StatusCode = (int)errorResponse.StatusCode;
             return serviceException;
         }
     }

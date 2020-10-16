@@ -1,54 +1,57 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Net;
-using System.IO;
-
-using KS3.Http;
+﻿using KS3.Http;
 using KS3.Transform;
+using System.Collections.Generic;
+using System.IO;
+using System.Net;
 
 namespace KS3.Internal
 {
     public class XmlResponseHandler<X> : IHttpResponseHandler<X>
     {
-        /** The SAX unmarshaller to use when handling the response from KS3 */
-        private IUnmarshaller<X, Stream> responseUnmarshaller;
+        /// <summary>
+        /// The SAX unmarshaller to use when handling the response from KS3
+        /// </summary>
+        private IUnmarshaller<X, Stream> _responseUnmarshaller;
 
-        /** Response headers from the processed response */
-        private IDictionary<String, String> responseHeaders;
+        /// <summary>
+        /// Response headers from the processed response 
+        /// </summary>
+        private IDictionary<string, string> _responseHeaders;
 
 
-        /**
-         * Constructs a new KS3 response handler that will use the specified SAX
-         * unmarshaller to turn the response into an object.
-         */
+        /// <summary>
+        /// Constructs a new KS3 response handler that will use the specified SAX  unmarshaller to turn the response into an object.
+        /// </summary>
+        /// <param name="responseUnmarshaller"></param>
         public XmlResponseHandler(IUnmarshaller<X, Stream> responseUnmarshaller)
         {
-            this.responseUnmarshaller = responseUnmarshaller;
+            _responseUnmarshaller = responseUnmarshaller;
         }
 
         public X Handle(HttpWebResponse response)
         {
-            X result = default(X);
-            responseHeaders = new Dictionary<String, String>();
+            X result = default;
+            _responseHeaders = new Dictionary<string, string>();
 
-            foreach (String key in response.Headers.AllKeys)
-                responseHeaders.Add(key, response.Headers[key]);
+            foreach (string key in response.Headers.AllKeys)
+            {
+                _responseHeaders.Add(key, response.Headers[key]);
+            }
 
-            if (responseUnmarshaller != null)
-                result = responseUnmarshaller.Unmarshall(response.GetResponseStream());
-            
+            if (_responseUnmarshaller != null)
+            {
+                result = _responseUnmarshaller.Unmarshall(response.GetResponseStream());
+            }
             return result;
         }
 
-        /**
-         * Returns the headers from the processed response. Will return null until a
-         * response has been handled.
-         */
-        public IDictionary<String, String> getResponseHeaders()
+        /// <summary>
+        /// Returns the headers from the processed response. Will return null until a response has been handled.
+        /// </summary>
+        /// <returns></returns>
+        public IDictionary<string, string> getResponseHeaders()
         {
-            return this.responseHeaders;
+            return _responseHeaders;
         }
     }
 }

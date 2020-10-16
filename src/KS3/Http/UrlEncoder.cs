@@ -1,5 +1,4 @@
-﻿using System;
-using System.Text;
+﻿using System.Text;
 
 namespace KS3.Http
 {
@@ -9,9 +8,12 @@ namespace KS3.Http
 
         public static string Encode(string s, Encoding encoding)
         {
-            if (s == null) return null;
+            if (string.IsNullOrWhiteSpace(s))
+            {
+                return s;
+            }
 
-            StringBuilder builder = new StringBuilder();
+            var builder = new StringBuilder();
             int start = -1;
             for (int i = 0; i < s.Length; i++)
             {
@@ -21,7 +23,7 @@ namespace KS3.Http
                 {
                     if (start >= 0)
                     {
-                        convert(s.Substring(start, i - start), builder, encoding);
+                        Convert(s.Substring(start, i - start), builder, encoding);
                         start = -1;
                     }
                     if (ch != ' ') builder.Append(ch);
@@ -34,12 +36,13 @@ namespace KS3.Http
                 }
             }
             if (start >= 0)
-                convert(s.Substring(start, s.Length - start), builder, encoding);
-
+            {
+                Convert(s.Substring(start, s.Length - start), builder, encoding);
+            }
             return builder.ToString().Trim().Replace("+", "%20").Replace("*", "%2A").Replace("%2F", "/");
         }
 
-        private static void convert(String s, StringBuilder builder, Encoding encoding)
+        private static void Convert(string s, StringBuilder builder, Encoding encoding)
         {
             byte[] bytes = encoding.GetBytes(s);
             for (int j = 0; j < bytes.Length; j++)

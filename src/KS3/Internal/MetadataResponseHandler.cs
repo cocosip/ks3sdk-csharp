@@ -4,10 +4,9 @@ using System.Net;
 
 namespace KS3.Internal
 {
-    /**
-     * KS3 response handler that knows how to pull KS3 object metadata out of a
-     * response and unmarshall it into an ObjectMetadata object.
-     */
+    /// <summary>
+    ///  KS3 response handler that knows how to pull KS3 object metadata out of a response and unmarshall it into an ObjectMetadata object.
+    /// </summary>
     public class MetadataResponseHandler : IHttpResponseHandler<ObjectMetadata>
     {
         public ObjectMetadata Handle(HttpWebResponse response)

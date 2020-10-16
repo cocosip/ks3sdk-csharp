@@ -2,6 +2,8 @@
 {
     public enum Region
     {
-        BEIJING, HANGZHOU, JIYANG
+        BEIJING,
+        HANGZHOU,
+        JIYANG
     }
 }

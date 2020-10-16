@@ -10,24 +10,44 @@ namespace KS3.Http
 {
     public static class HttpRequestFactory
     {
-        /**
-         * Creates an HttpWebRequest based on the specified request and
-         * populates any parameters, headers, etc. from the original request.
-         */
+        /// <summary>
+        /// Creates an HttpWebRequest based on the specified request and populates any parameters, headers, etc. from the original request.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="request"></param>
+        /// <param name="clientConfiguration"></param>
+        /// <returns></returns>
         public static HttpWebRequest CreateHttpRequest<T>(IRequest<T> request, ClientConfiguration clientConfiguration) where T : KS3Request
         {
             Uri endpoint = request.GetEndpoint();
             string uri = endpoint.ToString();
-            if (request.GetResourcePath() != null && request.GetResourcePath().Length > 0)
+
+            if (!string.IsNullOrWhiteSpace(request.GetResourcePath()))
             {
                 if (request.GetResourcePath().StartsWith("/"))
                 {
-                    if (uri.EndsWith("/")) uri = uri.Substring(0, uri.Length - 1);
+                    uri = uri.TrimEnd('/');
                 }
-                else if (!uri.EndsWith("/")) uri += "/";
+                else if (!uri.EndsWith("/"))
+                {
+                    uri += "/";
+                }
                 uri += request.GetResourcePath();
             }
-            else if (!uri.EndsWith("/")) uri += "/";
+            else if (!uri.EndsWith("/"))
+            {
+                uri += "/";
+            }
+            //if (request.GetResourcePath() != null && request.GetResourcePath().Length > 0)
+            //{
+            //    if (request.GetResourcePath().StartsWith("/"))
+            //    {
+            //        if (uri.EndsWith("/")) uri = uri.Substring(0, uri.Length - 1);
+            //    }
+            //    else if (!uri.EndsWith("/")) uri += "/";
+            //    uri += request.GetResourcePath();
+            //}
+            //else if (!uri.EndsWith("/")) uri += "/";
 
             string encodedParams = EncodeParameters(request);
 
@@ -35,23 +55,27 @@ namespace KS3.Http
              * For all non-POST requests, and any POST requests that already have a
              * payload, we put the encoded params directly in the URI, otherwise,
              * we'll put them in the POST request's payload.
-             */;
+             */
             bool putParamsInUri = request.GetHttpMethod() != HttpMethod.POST || request.GetContent() != null;
 
             if (encodedParams != null && (putParamsInUri || encodedParams.Contains("upload")))
+            {
                 uri += "?" + encodedParams;
-
+            }
             if (request.GetHttpMethod() == HttpMethod.POST && encodedParams != null && !putParamsInUri && !encodedParams.Contains("upload"))
+            {
                 request.SetContent(new MemoryStream(Constants.DEFAULT_ENCODING.GetBytes(encodedParams)));
+            }
+
             HttpWebRequest httpRequest = (HttpWebRequest)WebRequest.Create(uri);
             httpRequest.Method = request.GetHttpMethod().ToString();
-            
+
             httpRequest.AllowWriteStreamBuffering = false; // important
 
-            httpRequest.Timeout = clientConfiguration.getTimeout();
-            httpRequest.ReadWriteTimeout = clientConfiguration.getReadWriteTimeout();
+            httpRequest.Timeout = clientConfiguration.Timeout;
+            httpRequest.ReadWriteTimeout = clientConfiguration.ReadWriteTimeout;
 
-            configureHeaders(httpRequest, request, clientConfiguration);
+            ConfigureHeaders(httpRequest, request, clientConfiguration);
 
             if (request.GetContent() != null)
             {
@@ -78,10 +102,12 @@ namespace KS3.Http
             return httpRequest;
         }
 
-        /**
-         * Creates an encoded query string from all the parameters in the specified
-         * request.
-         */
+        /// <summary>
+        /// Creates an encoded query string from all the parameters in the specified request.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="request"></param>
+        /// <returns></returns>
         private static string EncodeParameters<T>(IRequest<T> request) where T : KS3Request
         {
             if (request.GetParameters().Count == 0)
@@ -102,26 +128,53 @@ namespace KS3.Http
             return builder.ToString();
         }
 
-        /** Configures the headers in the specified HTTP request. */
-        private static void configureHeaders<T>(HttpWebRequest httpRequest, IRequest<T> request, ClientConfiguration clientConfiguration) where T : KS3Request
+        /// <summary>
+        ///  Configures the headers in the specified HTTP request.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="httpRequest"></param>
+        /// <param name="request"></param>
+        /// <param name="clientConfiguration"></param>
+        private static void ConfigureHeaders<T>(HttpWebRequest httpRequest, IRequest<T> request, ClientConfiguration clientConfiguration) where T : KS3Request
         {
             // Copy over any other headers already in our request
             foreach (string name in request.GetHeaders().Keys)
             {
-                if (name.Equals(Headers.HOST)) continue;
+                if (name.Equals(Headers.HOST, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
                 string value = request.GetHeaders()[name];
 
-                if (name.Equals(Headers.CONTENT_TYPE)) httpRequest.ContentType = value;
-                else if (name.Equals(Headers.CONTENT_LENGTH)) httpRequest.ContentLength = long.Parse(value);
-                else if (name.Equals(Headers.USER_AGENT)) httpRequest.UserAgent = value;
-                else if (name.Equals(Headers.DATE)) httpRequest.Date = DateTime.Parse(value);
+                if (name.Equals(Headers.CONTENT_TYPE))
+                {
+                    httpRequest.ContentType = value;
+                }
+                else if (name.Equals(Headers.CONTENT_LENGTH))
+                {
+                    httpRequest.ContentLength = long.Parse(value);
+                }
+                else if (name.Equals(Headers.USER_AGENT))
+                {
+                    httpRequest.UserAgent = value;
+                }
+                else if (name.Equals(Headers.DATE))
+                {
+                    httpRequest.Date = DateTime.Parse(value);
+                }
                 else if (name.Equals(Headers.RANGE))
                 {
                     string[] range = value.Split('-');
                     httpRequest.AddRange(long.Parse(range[0]), long.Parse(range[1]));
                 }
-                else if (name.Equals(Headers.GET_OBJECT_IF_MODIFIED_SINCE)) httpRequest.IfModifiedSince = DateTime.Parse(value);
-                else httpRequest.Headers[name] = value;
+                else if (name.Equals(Headers.GET_OBJECT_IF_MODIFIED_SINCE))
+                {
+                    httpRequest.IfModifiedSince = DateTime.Parse(value);
+                }
+                else
+                {
+                    httpRequest.Headers[name] = value;
+                }
             }
 
             /* Set content type and encoding */

@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace KS3.Model
+﻿namespace KS3.Model
 {
     public class SetObjectAclRequest : KS3Request
     {

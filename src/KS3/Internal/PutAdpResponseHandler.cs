@@ -1,19 +1,17 @@
 ﻿using KS3.Http;
 using KS3.Model;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Text;
 
 namespace KS3.Internal
 {
     public class PutAdpResponseHandler:IHttpResponseHandler<PutAdpResult> 
     {
-        public PutAdpResult Handle(System.Net.HttpWebResponse response)
+        public PutAdpResult Handle(HttpWebResponse response)
         {
-            PutAdpResult result = new PutAdpResult();
-            result.Status = response.StatusCode;
+            PutAdpResult result = new PutAdpResult
+            {
+                Status = response.StatusCode
+            };
             if (HttpStatusCode.OK.Equals(response.StatusCode))
             {
                 result.TaskId = response.Headers.Get(Headers.TaskId);

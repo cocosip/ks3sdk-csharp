@@ -2,7 +2,7 @@
 {
     public class InitiateMultipartUploadRequest : KS3Request
     {
-        public string Bucketname { get; set; }
+        public string BucketName { get; set; }
 
         public string Objectkey { get; set; }
 
@@ -23,7 +23,7 @@
 
         public InitiateMultipartUploadRequest(string bucketname, string objectkey) : this()
         {
-            Bucketname = bucketname;
+            BucketName = bucketname;
             Objectkey = objectkey;
         }
 

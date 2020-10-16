@@ -10,7 +10,7 @@ namespace KS3.Internal
 {
     public static class RestUtils
     {
-        private static IList<String> SIGNED_PARAMETERS = new List<String> {
+        private static readonly List<string> SIGNED_PARAMETERS = new List<string> {
             "acl","adp","torrent", "logging", "location", "policy", "requestPayment", "versioning",
             "versions", "versionId", "notification", "uploadId", "uploads", "partNumber", "website",
             "delete", "lifecycle", "tagging", "cors", "restore",
@@ -18,64 +18,85 @@ namespace KS3.Internal
             "response-content-language", "response-content-type", "response-expires"};
 
 
-        /**
-         * Calculate the canonical string for a REST/HTTP request to KS3.
-         */
-        public static String makeKS3CanonicalString<T>(String method, String resource, IRequest<T> request, String expires) where T : KS3Request
+        /// <summary>
+        /// Calculate the canonical string for a REST/HTTP request to KS3.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="method"></param>
+        /// <param name="resource"></param>
+        /// <param name="request"></param>
+        /// <param name="expires"></param>
+        /// <returns></returns>
+        public static string makeKS3CanonicalString<T>(string method, string resource, IRequest<T> request, string expires) where T : KS3Request
         {
             StringBuilder buf = new StringBuilder();
             buf.Append(method + "\n");
 
             // Add all interesting headers to a list, then sort them.  "Interesting"
             // is defined as Content-MD5, Content-Type, Date, and x-kss-
-            IDictionary<String, String> headers = request.GetHeaders();
-            IDictionary<String, String> interestingHeaders = new SortedDictionary<String, String>();
+            var headers = request.GetHeaders();
+            var interestingHeaders = new SortedDictionary<string, string>();
             if (headers != null && headers.Count > 0)
             {
-                foreach (String name in headers.Keys)
+                foreach (var name in headers.Keys)
                 {
-                    String value = headers[name];
-
-                    String lname = name.ToLower();
+                    var value = headers[name];
+                    var lname = name.ToLower();
 
                     // Ignore any headers that are not particularly interesting.
                     if (lname.Equals(Headers.CONTENT_TYPE.ToLower()) || lname.Equals(Headers.CONTENT_MD5.ToLower()) || lname.Equals(Headers.DATE.ToLower()) ||
                         lname.StartsWith(Headers.KS3_PREFIX))
+                    {
                         interestingHeaders.Add(lname, value);
+                    }
                 }
             }
 
             // Remove default date timestamp if "x-kss-date" is set.
             if (interestingHeaders.ContainsKey(Headers.KS3_ALTERNATE_DATE))
+            {
                 interestingHeaders[Headers.DATE.ToLower()] = "";
+            }
 
             // Use the expires value as the timestamp if it is available. This trumps both the default
             // "date" timestamp, and the "x-kss-date" header.
             if (expires != null)
+            {
                 interestingHeaders[Headers.DATE.ToLower()] = expires;
-
+            }
             // These headers require that we still put a new line in after them,
             // even if they don't exist.
             if (!interestingHeaders.ContainsKey(Headers.CONTENT_TYPE.ToLower()))
+            {
                 interestingHeaders.Add(Headers.CONTENT_TYPE.ToLower(), "");
+            }
             if (!interestingHeaders.ContainsKey(Headers.CONTENT_MD5.ToLower()))
+            {
                 interestingHeaders.Add(Headers.CONTENT_MD5.ToLower(), "");
+            }
 
             // Any parameters that are prefixed with "x-kss-" need to be included
             // in the headers section of the canonical string to sign
-            foreach (String name in request.GetParameters().Keys)
-                if (name.StartsWith(Headers.KS3_PREFIX))
-                {
-                    String value = request.GetParameters()[name];
-                    interestingHeaders[name] = value;
-                }
-
-            // Add all the interesting headers (i.e.: all that startwith x-kss- ;-))
-            foreach (String name in interestingHeaders.Keys)
+            foreach (string name in request.GetParameters().Keys)
             {
                 if (name.StartsWith(Headers.KS3_PREFIX))
+                {
+                    string value = request.GetParameters()[name];
+                    interestingHeaders[name] = value;
+                }
+            }
+
+            // Add all the interesting headers (i.e.: all that startwith x-kss- ;-))
+            foreach (string name in interestingHeaders.Keys)
+            {
+                if (name.StartsWith(Headers.KS3_PREFIX))
+                {
                     buf.Append(name + ":" + interestingHeaders[name]);
-                else buf.Append(interestingHeaders[name]);
+                }
+                else
+                {
+                    buf.Append(interestingHeaders[name]);
+                }
                 buf.Append("\n");
             }
 
@@ -83,19 +104,24 @@ namespace KS3.Internal
             resource = resource.Replace("%5C", "/").Replace("//", "/%2F");
             resource = resource.EndsWith("%2F") ? resource.Substring(0, resource.Length - 3) : resource;
             buf.Append(resource);
-            String[] parameterNames = request.GetParameters().Keys.ToArray();
+            string[] parameterNames = request.GetParameters().Keys.ToArray();
             Array.Sort(parameterNames);
             char separator = '?';
-            foreach (String parameterName in parameterNames)
+            foreach (string parameterName in parameterNames)
             {
                 // Skip any parameters that aren't part of the canonical signed string
-                if (!SIGNED_PARAMETERS.Contains(parameterName)) continue;
+                if (!SIGNED_PARAMETERS.Contains(parameterName))
+                {
+                    continue;
+                }
 
                 buf.Append(separator);
                 buf.Append(parameterName);
-                String parameterValue = request.GetParameters()[parameterName];
-                if (parameterValue != null) buf.Append("=" + parameterValue);
-
+                string parameterValue = request.GetParameters()[parameterName];
+                if (parameterValue != null)
+                {
+                    buf.Append("=" + parameterValue);
+                }
                 separator = '&';
             }
 
@@ -104,7 +130,7 @@ namespace KS3.Internal
 
         public static void PopulateObjectMetadata(HttpWebResponse response, ObjectMetadata metadata)
         {
-            ISet<string> ignoredHeaders = new HashSet<string> {
+            var ignoredHeaders = new HashSet<string> {
                 Headers.DATE,
                 Headers.SERVER,
                 Headers.REQUEST_ID,
@@ -132,7 +158,7 @@ namespace KS3.Internal
                 }
                 else if (name.Equals(Headers.ETAG))
                 {
-                    metadata.SetHeader(name, removeQuotes(response.Headers[name]));
+                    metadata.SetHeader(name, RemoveQuotes(response.Headers[name]));
                 }
                 else
                 {
@@ -141,16 +167,28 @@ namespace KS3.Internal
             }
         }
 
-        /**
-         * Removes any surrounding quotes from the specified string and returns a
-         * new string.
-         */
-        private static String removeQuotes(String s)
+        /// <summary>
+        /// Removes any surrounding quotes from the specified string and returns a new string.
+        /// </summary>
+        /// <param name="s"></param>
+        /// <returns></returns>
+        private static string RemoveQuotes(string s)
         {
-            if (s == null) return null;
-            s = s.Trim();
-            if (s.StartsWith("\"")) s = s.Substring(1);
-            if (s.EndsWith("\"")) s = s.Substring(0, s.Length - 1);
+            if (string.IsNullOrWhiteSpace(s))
+            {
+                return s;
+            }
+
+            s = s.Trim().TrimStart('"').TrimEnd('"');
+
+            //if (s.StartsWith("\""))
+            //{
+            //    s = s.Substring(1);
+            //}
+            //if (s.EndsWith("\""))
+            //{
+            //    s = s.Substring(0, s.Length - 1);
+            //}
             return s;
         }
     }

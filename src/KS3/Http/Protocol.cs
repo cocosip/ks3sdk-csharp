@@ -1,8 +1,8 @@
 ﻿namespace KS3.Http
 {
-    /**
-     * Represents the communication protocol to use when sending requests to KS3.
-     */
+    /// <summary>
+    /// Represents the communication protocol to use when sending requests to KS3.
+    /// </summary>
     public static class Protocol
     {
         public static string HTTP = "http";

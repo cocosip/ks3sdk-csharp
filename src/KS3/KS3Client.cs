@@ -18,20 +18,30 @@ namespace KS3
     {
         private XmlResponseHandler<Type> voidResponseHandler = new XmlResponseHandler<Type>(null);
 
-        /** KS3 credentials. */
-        private IKS3Credentials _ks3Credentials;
+        /// <summary>
+        /// KS3 credentials.
+        /// </summary>
+        private readonly IKS3Credentials _ks3Credentials;
 
-        /** The service endpoint to which this client will send requests. */
-        private Uri endpoint;
+        /// <summary>
+        /// The service endpoint to which this client will send requests.
+        /// </summary>
+        private Uri _endpoint;
 
-        /** The client configuration */
+        /// <summary>
+        /// The client configuration
+        /// </summary>
         private ClientConfiguration _clientConfiguration;
 
-        /** Low level client for sending requests to KS3. */
+        /// <summary>
+        /// Low level client for sending requests to KS3. 
+        /// </summary>
         private KS3HttpClient _client;
 
-        /** Optional offset (in seconds) to use when signing requests */
-        private int timeOffset;
+        /// <summary>
+        /// Optional offset (in seconds) to use when signing requests
+        /// </summary>
+        private int _timeOffset;
 
         /**
          * Constructs a new KS3Client object using the specified Access Key ID and Secret Key.
@@ -71,13 +81,15 @@ namespace KS3
         public void SetEndpoint(string endpoint)
         {
             if (!endpoint.Contains("://"))
-                endpoint = _clientConfiguration.getProtocol() + "://" + endpoint;
-            this.endpoint = new Uri(endpoint);
+            {
+                endpoint = _clientConfiguration.Protocol + "://" + endpoint;
+            }
+            _endpoint = new Uri(endpoint);
         }
 
         public void SetConfiguration(ClientConfiguration clientConfiguration)
         {
-            this._clientConfiguration = clientConfiguration;
+            _clientConfiguration = clientConfiguration;
             _client = new KS3HttpClient(clientConfiguration);
         }
 
@@ -87,9 +99,9 @@ namespace KS3
          * Value is in seconds, positive values imply the current clock is "fast",
          * negative values imply clock is slow.
          */
-        public void setTimeOffset(int timeOffset)
+        public void SetTimeOffset(int timeOffset)
         {
-            this.timeOffset = timeOffset;
+            this._timeOffset = timeOffset;
         }
 
         /**
@@ -100,7 +112,7 @@ namespace KS3
          */
         public int GetTimeOffset()
         {
-            return timeOffset;
+            return _timeOffset;
         }
 
         /**
@@ -147,9 +159,11 @@ namespace KS3
             return GetBucketAcl(new GetBucketAclRequest(bucketName));
         }
 
-        /**
-         * Gets the AccessControlList (ACL) for the specified KS3 bucket.
-         */
+        /// <summary>
+        ///  Gets the AccessControlList (ACL) for the specified KS3 bucket.
+        /// </summary>
+        /// <param name="getBucketAclRequest"></param>
+        /// <returns></returns>
         public AccessControlList GetBucketAcl(GetBucketAclRequest getBucketAclRequest)
         {
             string bucketName = getBucketAclRequest.BucketName;
@@ -473,7 +487,7 @@ namespace KS3
 
             IProgressListener progressListener = getObjectRequest.ProgressListener;
 
-            fireProgressEvent(progressListener, ProgressEvent.STARTED);
+            FireProgressEvent(progressListener, ProgressEvent.STARTED);
 
             KS3Object ks3Object = null;
             try
@@ -482,15 +496,15 @@ namespace KS3
             }
             catch (ProgressInterruptedException e)
             {
-                fireProgressEvent(progressListener, ProgressEvent.CANCELED);
+                FireProgressEvent(progressListener, ProgressEvent.CANCELED);
                 throw e;
             }
             catch (Exception e)
             {
-                fireProgressEvent(progressListener, ProgressEvent.FAILED);
+                FireProgressEvent(progressListener, ProgressEvent.FAILED);
                 throw e;
             }
-            fireProgressEvent(progressListener, ProgressEvent.COMPLETED);
+            FireProgressEvent(progressListener, ProgressEvent.COMPLETED);
 
             ks3Object.BucketName = bucketName;
             ks3Object.Key = key;
@@ -622,7 +636,7 @@ namespace KS3
             if (progressListener != null)
             {
                 input = new ProgressReportingInputStream(input, progressListener);
-                fireProgressEvent(progressListener, ProgressEvent.STARTED);
+                FireProgressEvent(progressListener, ProgressEvent.STARTED);
             }
 
             PopulateRequestMetadata(metadata, request);
@@ -637,12 +651,12 @@ namespace KS3
             }
             catch (ProgressInterruptedException e)
             {
-                fireProgressEvent(progressListener, ProgressEvent.CANCELED);
+                FireProgressEvent(progressListener, ProgressEvent.CANCELED);
                 throw e;
             }
             catch (Exception e)
             {
-                fireProgressEvent(progressListener, ProgressEvent.FAILED);
+                FireProgressEvent(progressListener, ProgressEvent.FAILED);
                 throw e;
             }
             finally
@@ -653,7 +667,7 @@ namespace KS3
                 }
             }
 
-            fireProgressEvent(progressListener, ProgressEvent.COMPLETED);
+            FireProgressEvent(progressListener, ProgressEvent.COMPLETED);
 
             var result = new PutObjectResult
             {
@@ -746,11 +760,11 @@ namespace KS3
         }
         public InitiateMultipartUploadResult InitiateMultipartUpload(InitiateMultipartUploadRequest param)
         {
-            IRequest<InitiateMultipartUploadRequest> request = this.CreateRequest(param.Bucketname, param.Objectkey, param, HttpMethod.POST);
+            IRequest<InitiateMultipartUploadRequest> request = this.CreateRequest(param.BucketName, param.Objectkey, param, HttpMethod.POST);
             request.SetParameter("uploads", null);
             request.GetHeaders()[Headers.CONTENT_LENGTH] = "0";
             InitiateMultipartUploadResult result = new InitiateMultipartUploadResult();
-            result = this.Invoke(request, new MultipartUploadResultUnmarshaller(), param.Bucketname, param.Objectkey);
+            result = this.Invoke(request, new MultipartUploadResultUnmarshaller(), param.BucketName, param.Objectkey);
             return result;
         }
 
@@ -796,7 +810,7 @@ namespace KS3
             if (progressListener != null)
             {
                 input = new ProgressReportingInputStream(input, progressListener);
-                fireProgressEvent(progressListener, ProgressEvent.STARTED);
+                FireProgressEvent(progressListener, ProgressEvent.STARTED);
             }
 
             PopulateRequestMetadata(metadata, request);
@@ -811,12 +825,12 @@ namespace KS3
             }
             catch (ProgressInterruptedException e)
             {
-                fireProgressEvent(progressListener, ProgressEvent.CANCELED);
+                FireProgressEvent(progressListener, ProgressEvent.CANCELED);
                 throw e;
             }
             catch (Exception e)
             {
-                fireProgressEvent(progressListener, ProgressEvent.FAILED);
+                FireProgressEvent(progressListener, ProgressEvent.FAILED);
                 throw e;
             }
             finally
@@ -828,7 +842,7 @@ namespace KS3
                 }
             }
 
-            fireProgressEvent(progressListener, ProgressEvent.COMPLETED);
+            FireProgressEvent(progressListener, ProgressEvent.COMPLETED);
 
             PartETag result = new PartETag(param.PartNumber, returnedMetadata.GetETag());
 
@@ -955,7 +969,7 @@ namespace KS3
         /// <returns>url</returns>
         public string generatePresignedUrl(string bucketName, string key, DateTime expiration)
         {
-            return this.generatePresignedUrl(bucketName, key, expiration, null);
+            return GeneratePresignedUrl(bucketName, key, expiration, null);
         }
         /// <summary>
         /// generate PresignedUrl the url can apply for other user
@@ -965,34 +979,52 @@ namespace KS3
         /// <param name="expiration"></param>
         /// <param name="overrides"></param>
         /// <returns></returns>
-        public string generatePresignedUrl(string bucketName, string key, DateTime expiration, ResponseHeaderOverrides overrides)
+        public string GeneratePresignedUrl(string bucketName, string key, DateTime expiration, ResponseHeaderOverrides overrides)
         {
             string url = "";
             string param = "";
 
-            overrides = overrides == null ? new ResponseHeaderOverrides() : overrides;
-            if (!string.IsNullOrEmpty(overrides.CacheControl))
+            overrides ??= new ResponseHeaderOverrides();
+
+            if (!string.IsNullOrWhiteSpace(overrides.CacheControl))
+            {
                 param += "response-cache-control=" + overrides.CacheControl;
-            if (!string.IsNullOrEmpty(overrides.ContentType))
+            }
+            if (!string.IsNullOrWhiteSpace(overrides.ContentType))
+            {
                 param += "&response-content-type=" + overrides.ContentType;
-            if (!string.IsNullOrEmpty(overrides.ContentLanguage))
+            }
+            if (!string.IsNullOrWhiteSpace(overrides.ContentLanguage))
+            {
                 param += "&response-content-language=" + overrides.ContentLanguage;
-            if (!string.IsNullOrEmpty(overrides.Expires))
+            }
+            if (!string.IsNullOrWhiteSpace(overrides.Expires))
+            {
                 param += "&response-expires=" + overrides.Expires;
-            if (!string.IsNullOrEmpty(overrides.ContentDisposition))
+            }
+
+            if (!string.IsNullOrWhiteSpace(overrides.ContentDisposition))
+            {
                 param += "&response-content-disposition=" + overrides.ContentDisposition;
-            if (!string.IsNullOrEmpty(overrides.ContentEncoding))
+            }
+
+            if (!string.IsNullOrWhiteSpace(overrides.ContentEncoding))
+            {
                 param += "&response-content-encoding=" + overrides.ContentEncoding;
+            }
 
             var baselineTime = new DateTime(1970, 1, 1);
             var expires = Convert.ToInt64((expiration.ToUniversalTime() - baselineTime).TotalSeconds);
             try
             {
-                KS3Signer<NoneKS3Request> ks3Signer = createSigner<NoneKS3Request>(HttpMethod.GET.ToString(), bucketName, key);
-                string signer = ks3Signer.GetSignature(this._ks3Credentials, expires.ToString());
+                KS3Signer<NoneKS3Request> ks3Signer = CreateSigner<NoneKS3Request>(HttpMethod.GET.ToString(), bucketName, key);
+                string signer = ks3Signer.GetSignature(_ks3Credentials, expires.ToString());
+
+
+
                 url += @"http://" + bucketName + "." + Constants.KS3_HOSTNAME
                              + "/" + FilterSpecial(UrlEncoder.Encode(key, Constants.DEFAULT_ENCODING)) + "?AccessKeyId="
-                             + UrlEncoder.Encode(this._ks3Credentials.GetKS3AccessKeyId(), Constants.DEFAULT_ENCODING)
+                             + UrlEncoder.Encode(_ks3Credentials.KS3AccessKeyId, Constants.DEFAULT_ENCODING)
                              + "&Expires=" + expires + "&Signature="
                              + UrlEncoder.Encode(signer, Constants.DEFAULT_ENCODING) + "&" + param;
 
@@ -1040,7 +1072,7 @@ namespace KS3
         {
             IRequest<X> request = new DefaultRequest<X>(originalRequest);
             request.SetHttpMethod(httpMethod);
-            request.SetEndpoint(endpoint);
+            request.SetEndpoint(_endpoint);
 
             string resourcePath = "/" + (bucketName != null ? bucketName + "/" : "") + (key != null ? key : "");
             resourcePath = UrlEncoder.Encode(resourcePath, Constants.DEFAULT_ENCODING);
@@ -1077,7 +1109,7 @@ namespace KS3
             {
                 request.SetParameter(name, parameters[name]);
             }
-            request.SetTimeOffset(timeOffset);
+            request.SetTimeOffset(_timeOffset);
 
             /**
              * The string we sign needs to include the exact headers that we
@@ -1086,33 +1118,37 @@ namespace KS3
              * we have to set something here otherwise the request will fail.
              */
             if (!request.GetHeaders().ContainsKey(Headers.CONTENT_TYPE))
+            {
                 request.SetHeader(Headers.CONTENT_TYPE, Mimetypes.DEFAULT_MIMETYPE);
+            }
 
-            /**
-             * Set the credentials which will be used by the KS3Signer later.
-             */
+            //Set the credentials which will be used by the KS3Signer later.
             if (request.GetOriginalRequest().Credentials == null)
             {
                 request.GetOriginalRequest().Credentials = _ks3Credentials;
             }
-            return _client.Excute(request, responseHandler, createSigner(request, bucket, key));
+            return _client.Excute(request, responseHandler, CreateSigner(request, bucket, key));
         }
 
-        private KS3Signer<T> createSigner<T>(IRequest<T> request, string bucketName, string key) where T : KS3Request
+        private KS3Signer<T> CreateSigner<T>(IRequest<T> request, string bucketName, string key) where T : KS3Request
         {
-            return createSigner<T>(request.GetHttpMethod().ToString(), bucketName, key);
+            return CreateSigner<T>(request.GetHttpMethod().ToString(), bucketName, key);
         }
-        private KS3Signer<T> createSigner<T>(string httpMethod, string bucketName, string key) where T : KS3Request
+
+        private KS3Signer<T> CreateSigner<T>(string httpMethod, string bucketName, string key) where T : KS3Request
         {
             string resourcePath = "/" + (bucketName != null ? bucketName + "/" : "") + (key != null ? key : "");
             resourcePath = UrlEncoder.Encode(resourcePath, Constants.DEFAULT_ENCODING);
             return new KS3Signer<T>(httpMethod, resourcePath);
         }
-        /**
-         * Fires a progress event with the specified event type to the specified
-         * listener.
-         */
-        private static void fireProgressEvent(IProgressListener listener, int eventType)
+
+
+        /// <summary>
+        /// Fires a progress event with the specified event type to the specified listener.
+        /// </summary>
+        /// <param name="listener"></param>
+        /// <param name="eventType"></param>
+        private static void FireProgressEvent(IProgressListener listener, int eventType)
         {
             if (listener == null) return;
 

@@ -14,7 +14,9 @@ namespace KS3.Http
 {
     public class KS3HttpClient
     {
-        /** Client configuration options, such as proxy settings, max retries, etc. */
+        /// <summary>
+        /// Client configuration options, such as proxy settings, max retries, etc.
+        /// </summary>
         private readonly ClientConfiguration _config;
 
         private readonly ErrorResponseHandler _errorResponseHandler = new ErrorResponseHandler(new ErrorResponseUnmarshaller());
@@ -27,23 +29,22 @@ namespace KS3.Http
 
         private void Init()
         {
-            /* Setting for https proctol */
+            //Setting for https proctol
             ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(CheckValidationResult);
 
-            /* Set max connections */
-            int maxConnections = _config.getMaxConnections();
-            ServicePointManager.DefaultConnectionLimit = maxConnections;
+            //Set max connections
+            ServicePointManager.DefaultConnectionLimit = _config.MaxConnections;
 
-            /* Set proxy if configured */
-            var proxyHost = _config.getProxyHost();
-            int proxyPort = _config.getProxyPort();
-            if (proxyHost != null && proxyPort > 0)
+            //Set proxy if configured
+            var proxyHost = _config.ProxyHost;
+            int proxyPort = _config.ProxyPort;
+            if (!string.IsNullOrWhiteSpace(proxyHost) && proxyPort > 0)
             {
                 WebProxy webProxy = new WebProxy(proxyHost, proxyPort);
 
-                String proxyUsername = _config.getProxyUsername();
-                String proxyPassword = _config.getProxyPassword();
-                if (proxyUsername != null && proxyPassword != null)
+                var proxyUsername = _config.ProxyUsername;
+                var proxyPassword = _config.ProxyPassword;
+                if (!string.IsNullOrWhiteSpace(proxyUsername) && !string.IsNullOrWhiteSpace(proxyPassword))
                 {
                     NetworkCredential credential = new NetworkCredential(proxyUsername, proxyPassword);
                     webProxy.Credentials = credential;
@@ -52,7 +53,9 @@ namespace KS3.Http
                 WebRequest.DefaultWebProxy = webProxy;
             }
             else
+            {
                 WebRequest.DefaultWebProxy = null;
+            }
         }
 
         private static bool CheckValidationResult(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors errors)
@@ -105,26 +108,28 @@ namespace KS3.Http
                     {
                         throw ex;
                     }
-                    Thread.Sleep(1000);
+                    Thread.Sleep(100);
                 }
                 finally
                 {
-                    if (httpResponse != null)
-                        httpResponse.Close();
+                    httpResponse?.Close();
                 }
             }
             return result;
 
         }
 
-        /**
-         * Sets a User-Agent for the specified request, taking into account
-         * any custom data.
-         */
+        /// <summary>
+        /// Sets a User-Agent for the specified request, taking into account any custom data.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="request"></param>
         private void SetUserAgent<T>(IRequest<T> request) where T : KS3Request
         {
-            string userAgent = _config.getUserAgent();
-            if (userAgent != null) request.SetHeader(Headers.USER_AGENT, userAgent);
+            if (!string.IsNullOrWhiteSpace(_config.UserAgent))
+            {
+                request.SetHeader(Headers.USER_AGENT, _config.UserAgent);
+            }
         }
     }
 }

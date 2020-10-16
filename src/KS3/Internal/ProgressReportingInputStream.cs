@@ -80,9 +80,14 @@ namespace KS3.Internal
             }
 
             int bytesRead = _stream.Read(buffer, offset, count);
-            if (bytesRead > 0) Notify(bytesRead);
-            else Commit();
-
+            if (bytesRead > 0)
+            {
+                Notify(bytesRead);
+            }
+            else
+            {
+                Commit();
+            }
             return bytesRead;
         }
 

@@ -22,7 +22,9 @@ namespace KS3.Transform
         private static string ConvertOwner(Owner owner)
         {
             if (owner == null)
-                return null;
+            {
+                return string.Empty;
+            }
 
             return "<Owner><DisplayName>" + owner.DisplayName + "</DisplayName><ID>" + owner.Id + "</ID></Owner>";
         }
@@ -32,7 +34,9 @@ namespace KS3.Transform
             StringBuilder builder = new StringBuilder();
             builder.Append("<AccessControlList>");
             foreach (Grant grant in grants)
+            {
                 builder.Append(ConvertGrant(grant));
+            }
             builder.Append("</AccessControlList>");
 
             return builder.ToString();
@@ -52,19 +56,22 @@ namespace KS3.Transform
         private static string ConvertGrantee(IGrantee grantee)
         {
             if (grantee.GetType().Equals(typeof(CanonicalGrantee)))
+            {
                 return ConvertCanonicalGrantee((CanonicalGrantee)grantee);
+            }
             else if (grantee.GetType().Equals(typeof(GroupGrantee)))
+            {
                 return ConvertGroupGrantee((GroupGrantee)grantee);
-
+            }
             return null;
         }
 
         private static string ConvertCanonicalGrantee(CanonicalGrantee grantee)
         {
-            StringBuilder builder = new StringBuilder();
-            builder.Append("<Grantee xmlns:xsi=\"" + xmlns + "\" xsi:type=\"CanonicalUser\">");
-            builder.Append("<DisplayName>" + grantee.DisplayName + "</DisplayName>");
-            builder.Append("<ID>" + grantee.GetIdentifier() + "</ID>");
+            var builder = new StringBuilder();
+            builder.Append($"<Grantee xmlns:xsi=\"{xmlns}\" xsi:type=\"CanonicalUser\">");
+            builder.Append($"<DisplayName>{ grantee.DisplayName }</DisplayName>");
+            builder.Append($"<ID>{grantee.GetIdentifier()}</ID>");
             builder.Append("</Grantee>");
 
             return builder.ToString();

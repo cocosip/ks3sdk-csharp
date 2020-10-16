@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using KS3.KS3Exception;
 using System.IO;
+using System.Text;
 using System.Xml;
-
-using KS3.KS3Exception;
 
 namespace KS3.Transform
 {
@@ -13,20 +9,27 @@ namespace KS3.Transform
     {
         public ServiceException Unmarshall(Stream inputStream)
         {
-            String requestId = null;
-            String errorCode = null;
-            String message = "Unknow error, no response body.";
-            ServiceException serviceException = null;
-
+            var requestId = string.Empty;
+            var errorCode = string.Empty;
+            string message = "Unknow error, no response body.";
             StringBuilder currText = new StringBuilder();
             XmlReader xr = XmlReader.Create(new BufferedStream(inputStream));
             while (xr.Read())
             {
                 if (xr.NodeType.Equals(XmlNodeType.EndElement))
                 {
-                    if (xr.Name.Equals("Message")) message = currText.ToString();
-                    else if (xr.Name.Equals("Code")) errorCode = currText.ToString();
-                    else if (xr.Name.Equals("RequestId")) requestId = currText.ToString();
+                    if (xr.Name.Equals("Message"))
+                    {
+                        message = currText.ToString();
+                    }
+                    else if (xr.Name.Equals("Code"))
+                    {
+                        errorCode = currText.ToString();
+                    }
+                    else if (xr.Name.Equals("RequestId"))
+                    {
+                        requestId = currText.ToString();
+                    }
 
                     currText.Clear();
                 }
@@ -37,9 +40,11 @@ namespace KS3.Transform
 
             }
 
-            serviceException = new ServiceException(message);
-            serviceException.setErrorCode(errorCode);
-            serviceException.setRequestId(requestId);
+            ServiceException serviceException = new ServiceException(message)
+            {
+                ErrorCode = errorCode,
+                RequestId = requestId
+            };
 
             return serviceException;
         }
